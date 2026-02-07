@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/useAuthStore";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 
 import Logo from "@/assets/bulkcor_t.png";
 
@@ -31,6 +32,12 @@ export function Header({ onMenuClick, isSidebarOpen }: HeaderProps) {
         >
           <Menu className="h-6 w-6" />
         </Button>
+
+        {/* Desktop Breadcrumbs */}
+        <div className="hidden md:block">
+          <Breadcrumbs />
+        </div>
+
         <div className="flex items-center gap-2">
           {!isSidebarOpen && (
             <div className="flex items-center gap-2 md:hidden">

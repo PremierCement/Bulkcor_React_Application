@@ -20,7 +20,7 @@ export function Breadcrumbs() {
   const pathnames = location.pathname.split("/").filter((x) => x);
 
   return (
-    <nav aria-label="Breadcrumb" className="mb-4 flex items-center">
+    <nav aria-label="Breadcrumb" className="flex items-center">
       <ol className="flex items-center space-x-2">
         <li>
           {pathnames.length === 0 ? (
