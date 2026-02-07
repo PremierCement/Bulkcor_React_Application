@@ -35,7 +35,7 @@ export function PageHeader() {
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 rounded-full bg-white shadow-sm hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800"
+        className="h-8 w-8 rounded-full bg-white shadow-sm transition-all active:scale-90 hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800"
         onClick={() => navigate(-1)}
       >
         <ArrowLeft className="h-4 w-4" />

@@ -24,7 +24,7 @@ export function BottomNav() {
             to={item.href}
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center gap-1 transition-colors",
+                "flex flex-col items-center gap-1 transition-all active:scale-95 active:opacity-80",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground dark:text-slate-500 dark:hover:text-slate-300",

@@ -27,7 +27,7 @@ export function Header({ onMenuClick, isSidebarOpen }: HeaderProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="md:hidden active:scale-95"
           onClick={onMenuClick}
         >
           <Menu className="h-6 w-6" />
@@ -56,7 +56,7 @@ export function Header({ onMenuClick, isSidebarOpen }: HeaderProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 rounded-full border border-slate-200 transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"
+              className="h-9 w-9 rounded-full border border-slate-200 transition-all active:scale-95 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"
             >
               <User className="h-4 w-4 text-slate-600 dark:text-slate-400" />
             </Button>

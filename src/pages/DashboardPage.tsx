@@ -65,7 +65,7 @@ export function DashboardPage() {
               rounded-lg border
               backdrop-blur-xl 
               transition-all duration-300
-              hover:scale-[1.02] active:scale-[0.98]
+              hover:scale-[1.02] active:scale-[0.95] active:opacity-90
               hover:shadow-lg
               ${stat.bgGradient}
               ${stat.borderColor}
