@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/store/useAuthStore";
 
+import Logo from "@/assets/bulkcor_t.png";
+
 interface HeaderProps {
   onMenuClick: () => void;
   isSidebarOpen?: boolean;
@@ -31,9 +33,12 @@ export function Header({ onMenuClick, isSidebarOpen }: HeaderProps) {
         </Button>
         <div className="flex items-center gap-2">
           {!isSidebarOpen && (
-            <span className="text-xl font-bold text-primary md:hidden">
-              Bulkcor Trading LLC
-            </span>
+            <div className="flex items-center gap-2 md:hidden">
+              <img src={Logo} alt="Logo" className="h-8 w-auto" />
+              <span className="text-md font-semibold uppercase text-slate-800">
+                Bulkcor Trading LLC
+              </span>
+            </div>
           )}
         </div>
       </div>

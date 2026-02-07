@@ -1,14 +1,17 @@
 import { NavLink } from "react-router";
 import {
   LayoutDashboard,
-  ShoppingBag,
-  Users,
-  Package,
+  Trophy,
+  FileChartColumn,
+  BookOpenText,
   Settings,
   X,
+  UserSearch,
+  ShoppingCart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import Logo from "@/assets/bulkcor_t.png";
 
 interface SidebarProps {
   onClose?: () => void;
@@ -17,19 +20,33 @@ interface SidebarProps {
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
-  { icon: ShoppingBag, label: "Sales", href: "/sales" },
-  { icon: Package, label: "Inventory", href: "/inventory" },
-  { icon: Users, label: "Customers", href: "/customers" },
+  { icon: UserSearch, label: "Customer List", href: "/customer-list" },
+  { icon: ShoppingCart, label: "Order Placement", href: "/order-placement" },
+  { icon: Trophy, label: "Achievement", href: "/achievement" },
+  { icon: FileChartColumn, label: "Reports", href: "/reports" },
+  { icon: BookOpenText, label: "Knowledge", href: "/knowledge" },
   { icon: Settings, label: "Settings", href: "/settings" },
 ];
 
 export function Sidebar({ onClose, className }: SidebarProps) {
   return (
     <div className={cn("flex h-full flex-col border-r bg-white", className)}>
-      <div className="flex h-16 items-center justify-between px-6 border-b">
-        <span className="text-xl font-bold text-primary">
-          Bulkcor Trading LLC
-        </span>
+      <div className="flex h-16 items-center justify-between px-3 border-b bg-white">
+        <div className="flex items-center gap-2">
+          <img
+            src={Logo}
+            alt="Bulkcor Logo"
+            className="h-18 w-auto flex-shrink-0"
+          />
+          <div className="flex flex-col leading-none">
+            <span className="text-lg font-bold uppercase tracking-tight text-slate-700">
+              Bulkcor
+            </span>
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-600">
+              Trading LLC
+            </span>
+          </div>
+        </div>
         {onClose && (
           <Button
             variant="ghost"

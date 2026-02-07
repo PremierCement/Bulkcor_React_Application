@@ -1,12 +1,17 @@
 import { NavLink } from "react-router";
-import { LayoutDashboard, ShoppingBag, Package, User } from "lucide-react";
+import {
+  LayoutDashboard,
+  Trophy,
+  FileChartColumn,
+  BookOpenText,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Home", href: "/" },
-  { icon: ShoppingBag, label: "Sales", href: "/sales" },
-  { icon: Package, label: "Stock", href: "/inventory" },
-  { icon: User, label: "Profile", href: "/profile" },
+  { icon: LayoutDashboard, label: "Dashboard", href: "/" },
+  { icon: Trophy, label: "Achievement", href: "/achievement" },
+  { icon: FileChartColumn, label: "Reports", href: "/reports" },
+  { icon: BookOpenText, label: "Knowledge", href: "/knowledge" },
 ];
 
 export function BottomNav() {

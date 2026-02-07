@@ -3,6 +3,7 @@ import { MainLayout } from "@/layouts/MainLayout";
 import { AuthLayout } from "@/layouts/AuthLayout";
 import { LoginPage } from "@/pages/LoginPage";
 import { DashboardPage } from "@/pages/DashboardPage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ProtectedRoute, PublicRoute } from "@/components/auth/AuthRoute";
 
 const router = createBrowserRouter([
@@ -32,20 +33,44 @@ const router = createBrowserRouter([
             element: <DashboardPage />,
           },
           {
-            path: "sales",
-            element: <div className="p-4">Sales Page (Coming Soon)</div>,
+            path: "order-placement",
+            element: <NotFoundPage />,
           },
           {
-            path: "inventory",
-            element: <div className="p-4">Inventory Page (Coming Soon)</div>,
+            path: "customer-list",
+            element: <NotFoundPage />,
           },
           {
-            path: "customers",
-            element: <div className="p-4">Customers Page (Coming Soon)</div>,
+            path: "knowledge",
+            element: <NotFoundPage />,
           },
           {
-            path: "profile",
-            element: <div className="p-4">User Profile Page (Coming Soon)</div>,
+            path: "pre-orders",
+            element: <NotFoundPage />,
+          },
+          {
+            path: "collections",
+            element: <NotFoundPage />,
+          },
+          {
+            path: "sales-return",
+            element: <NotFoundPage />,
+          },
+          {
+            path: "achievement",
+            element: <NotFoundPage />,
+          },
+          {
+            path: "reports",
+            element: <NotFoundPage />,
+          },
+          {
+            path: "settings",
+            element: <NotFoundPage />,
+          },
+          {
+            path: "*",
+            element: <NotFoundPage />,
           },
         ],
       },

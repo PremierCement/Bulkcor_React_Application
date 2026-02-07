@@ -1,12 +1,14 @@
+import { Link } from "react-router";
 import { UserBanner } from "@/components/dashboard/UserBanner";
-import { TrendingUp, ShoppingBag, Users, Package } from "lucide-react";
+import { ShoppingBag, Package, ShoppingCart, Wallet } from "lucide-react";
 
 export function DashboardPage() {
   const stats = [
     {
       label: "Orders",
-      value: "$12,450",
-      icon: TrendingUp,
+      value: "450",
+      icon: ShoppingCart,
+      href: "/order-placement",
       textColor: "text-emerald-600 dark:text-emerald-400",
       bgGradient:
         "bg-gradient-to-br from-emerald-500/20 via-emerald-500/5 to-transparent",
@@ -17,6 +19,7 @@ export function DashboardPage() {
       label: "Pre Orders",
       value: "45",
       icon: ShoppingBag,
+      href: "/pre-orders",
       textColor: "text-blue-600 dark:text-blue-400",
       bgGradient:
         "bg-gradient-to-br from-blue-500/20 via-blue-500/5 to-transparent",
@@ -25,8 +28,9 @@ export function DashboardPage() {
     },
     {
       label: "Collections",
-      value: "120",
-      icon: Users,
+      value: "1220",
+      icon: Wallet,
+      href: "/collections",
       textColor: "text-purple-600 dark:text-purple-400",
       bgGradient:
         "bg-gradient-to-br from-purple-500/20 via-purple-500/5 to-transparent",
@@ -37,6 +41,7 @@ export function DashboardPage() {
       label: "Sales Return",
       value: "850",
       icon: Package,
+      href: "/sales-return",
       textColor: "text-orange-600 dark:text-orange-400",
       bgGradient:
         "bg-gradient-to-br from-orange-500/20 via-orange-500/5 to-transparent",
@@ -51,19 +56,23 @@ export function DashboardPage() {
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {stats.map((stat) => (
-          <div
+          <Link
             key={stat.label}
+            to={stat.href}
             className={`
-              relative overflow-hidden
+              group relative overflow-hidden
               min-h-[120px] 
               rounded-lg border
               backdrop-blur-xl 
+              transition-all duration-300
+              hover:scale-[1.02] active:scale-[0.98]
+              hover:shadow-lg
               ${stat.bgGradient}
               ${stat.borderColor}
               ${stat.shadowColor}
             `}
           >
-            <div className="absolute inset-0 bg-white/40 dark:bg-black/20" />
+            <div className="absolute inset-0 bg-white/40 transition-colors group-hover:bg-white/20 dark:bg-black/20 dark:group-hover:bg-black/10" />
 
             <div className="relative z-10 p-4 h-full flex flex-col justify-between">
               <div className="flex items-start justify-between">
@@ -78,12 +87,12 @@ export function DashboardPage() {
 
                 {/* Big Icon */}
                 <stat.icon
-                  className={`h-10 w-10 opacity-80 ${stat.textColor}`}
+                  className={`h-10 w-10 transition-transform duration-300 group-hover:scale-110 opacity-80 ${stat.textColor}`}
                   strokeWidth={1.5}
                 />
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
