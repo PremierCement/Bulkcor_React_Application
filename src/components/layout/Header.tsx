@@ -1,4 +1,4 @@
-import { Menu, Bell, User } from "lucide-react";
+import { Menu, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,7 +21,7 @@ export function Header({ onMenuClick, isSidebarOpen }: HeaderProps) {
   const { user, logout } = useAuthStore();
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b bg-white px-4 md:px-6">
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b bg-white transition-colors dark:border-slate-800 dark:bg-slate-900 px-4 md:px-6">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
@@ -35,7 +35,7 @@ export function Header({ onMenuClick, isSidebarOpen }: HeaderProps) {
           {!isSidebarOpen && (
             <div className="flex items-center gap-2 md:hidden">
               <img src={Logo} alt="Logo" className="h-8 w-auto" />
-              <span className="text-md font-semibold uppercase text-slate-800">
+              <span className="text-sm font-semibold uppercase text-slate-800 dark:text-slate-200">
                 Bulkcor Trading LLC
               </span>
             </div>
@@ -44,20 +44,14 @@ export function Header({ onMenuClick, isSidebarOpen }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon">
-          <Bell className="h-5 w-5" />
-        </Button>
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              size="sm"
-              className="relative h-8 w-8 rounded-full"
+              size="icon"
+              className="h-9 w-9 rounded-full border border-slate-200 transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"
             >
-              <div className="flex h-full w-full items-center justify-center rounded-full ">
-                <User className="h-4 w-4" />
-              </div>
+              <User className="h-4 w-4 text-slate-600 dark:text-slate-400" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

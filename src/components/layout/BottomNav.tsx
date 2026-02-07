@@ -16,7 +16,7 @@ const navItems = [
 
 export function BottomNav() {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-white md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-white dark:border-slate-800 dark:bg-slate-900 transition-colors md:hidden">
       <div className="flex h-16 items-center justify-around px-2">
         {navItems.map((item) => (
           <NavLink
@@ -27,7 +27,7 @@ export function BottomNav() {
                 "flex flex-col items-center gap-1 transition-colors",
                 isActive
                   ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground",
+                  : "text-muted-foreground hover:text-foreground dark:text-slate-500 dark:hover:text-slate-300",
               )
             }
           >

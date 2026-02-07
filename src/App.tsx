@@ -5,6 +5,7 @@ import { LoginPage } from "@/pages/LoginPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ProtectedRoute, PublicRoute } from "@/components/auth/AuthRoute";
+import { ReportsPage } from "./pages/ReportsPage";
 
 const router = createBrowserRouter([
   {
@@ -62,7 +63,7 @@ const router = createBrowserRouter([
           },
           {
             path: "reports",
-            element: <NotFoundPage />,
+            element: <ReportsPage />,
           },
           {
             path: "settings",

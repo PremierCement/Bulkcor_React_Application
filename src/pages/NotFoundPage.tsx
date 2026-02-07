@@ -18,11 +18,11 @@ export function NotFoundPage() {
         404
       </h1>
       <h2 className="mb-4 text-xl font-bold text-slate-700 dark:text-slate-300">
-        Page Not Found
+        Feature not available
       </h2>
       <p className="mb-10 max-w-md text-base text-slate-500 dark:text-slate-400">
-        The page you are looking for might have been removed or is temporarily
-        unavailable.
+        The feature you are looking for might have been removed or is
+        temporarily unavailable.
       </p>
 
       <div className="flex flex-col gap-3 sm:flex-row">

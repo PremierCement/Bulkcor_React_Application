@@ -8,10 +8,13 @@ import {
   X,
   UserSearch,
   ShoppingCart,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Logo from "@/assets/bulkcor_t.png";
+import { useThemeStore } from "@/store/useThemeStore";
 
 interface SidebarProps {
   onClose?: () => void;
@@ -29,9 +32,16 @@ const menuItems = [
 ];
 
 export function Sidebar({ onClose, className }: SidebarProps) {
+  const { theme, toggleTheme } = useThemeStore();
+
   return (
-    <div className={cn("flex h-full flex-col border-r bg-white", className)}>
-      <div className="flex h-16 items-center justify-between px-3 border-b bg-white">
+    <div
+      className={cn(
+        "flex h-full flex-col border-r bg-white dark:border-slate-800 dark:bg-slate-900 transition-colors",
+        className,
+      )}
+    >
+      <div className="flex h-16 items-center justify-between px-3 border-b bg-white dark:border-slate-800 dark:bg-slate-900 transition-colors">
         <div className="flex items-center gap-2">
           <img
             src={Logo}
@@ -39,10 +49,10 @@ export function Sidebar({ onClose, className }: SidebarProps) {
             className="h-18 w-auto flex-shrink-0"
           />
           <div className="flex flex-col leading-none">
-            <span className="text-lg font-bold uppercase tracking-tight text-slate-700">
+            <span className="text-lg font-bold uppercase tracking-tight text-slate-700 dark:text-slate-200">
               Bulkcor
             </span>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-600">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">
               Trading LLC
             </span>
           </div>
@@ -70,7 +80,7 @@ export function Sidebar({ onClose, className }: SidebarProps) {
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  : "text-muted-foreground hover:bg-slate-100 hover:text-foreground dark:hover:bg-slate-800",
               )
             }
           >
@@ -80,12 +90,29 @@ export function Sidebar({ onClose, className }: SidebarProps) {
         ))}
       </nav>
 
-      <div className="p-4 border-t">
-        <div className="rounded-lg bg-muted p-3">
-          <p className="text-xs font-semibold text-foreground">
-            Bulkcor Trading LLC
-          </p>
-          <p className="text-[10px] text-muted-foreground">Version 1.0.0</p>
+      <div className="p-4 border-t dark:border-slate-800">
+        <div className="flex items-center justify-between rounded-lg bg-slate-50 dark:bg-slate-800/50 p-3 transition-colors">
+          <div>
+            <p className="text-xs font-semibold text-foreground dark:text-slate-300">
+              Bulkcor Trading LLC
+            </p>
+            <p className="text-[10px] text-muted-foreground dark:text-slate-500">
+              Version 1.0.0
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full border border-slate-200 dark:border-slate-700 transition-colors hover:bg-white dark:hover:bg-slate-800"
+            onClick={toggleTheme}
+            title={theme === "light" ? "Dark Mode" : "Light Mode"}
+          >
+            {theme === "light" ? (
+              <Moon className="h-4 w-4 text-slate-600" />
+            ) : (
+              <Sun className="h-4 w-4 text-amber-400" />
+            )}
+          </Button>
         </div>
       </div>
     </div>

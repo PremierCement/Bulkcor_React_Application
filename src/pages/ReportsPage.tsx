@@ -1,14 +1,17 @@
 import { Link } from "react-router";
-import { UserBanner } from "@/components/dashboard/UserBanner";
-import { ShoppingBag, Package, ShoppingCart, Wallet } from "lucide-react";
+import {
+  FileChartPie,
+  FileUp,
+  FileOutput,
+  FileChartColumn,
+} from "lucide-react";
 
-export function DashboardPage() {
+export function ReportsPage() {
   const stats = [
     {
-      label: "Orders",
-      value: "450",
-      icon: ShoppingCart,
-      href: "/order-placement",
+      label: "Sales Report",
+      icon: FileChartColumn,
+      href: "/sales-report",
       textColor: "text-emerald-600 dark:text-emerald-400",
       bgGradient:
         "bg-gradient-to-br from-emerald-500/20 via-emerald-500/5 to-transparent",
@@ -16,10 +19,10 @@ export function DashboardPage() {
       shadowColor: "shadow-emerald-500/10",
     },
     {
-      label: "Pre Orders",
+      label: "Collection Report",
       value: "45",
-      icon: ShoppingBag,
-      href: "/pre-orders",
+      icon: FileChartPie,
+      href: "/collection-report",
       textColor: "text-blue-600 dark:text-blue-400",
       bgGradient:
         "bg-gradient-to-br from-blue-500/20 via-blue-500/5 to-transparent",
@@ -27,10 +30,10 @@ export function DashboardPage() {
       shadowColor: "shadow-blue-500/10",
     },
     {
-      label: "Collections",
+      label: "Return Report",
       value: "1220",
-      icon: Wallet,
-      href: "/collections",
+      icon: FileOutput,
+      href: "/return-report",
       textColor: "text-purple-600 dark:text-purple-400",
       bgGradient:
         "bg-gradient-to-br from-purple-500/20 via-purple-500/5 to-transparent",
@@ -38,10 +41,10 @@ export function DashboardPage() {
       shadowColor: "shadow-purple-500/10",
     },
     {
-      label: "Sales Return",
+      label: "Pre Order Report",
       value: "850",
-      icon: Package,
-      href: "/sales-return",
+      icon: FileUp,
+      href: "/pre-order-report",
       textColor: "text-orange-600 dark:text-orange-400",
       bgGradient:
         "bg-gradient-to-br from-orange-500/20 via-orange-500/5 to-transparent",
@@ -52,8 +55,6 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <UserBanner />
-
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {stats.map((stat) => (
           <Link
@@ -75,22 +76,19 @@ export function DashboardPage() {
           >
             <div className="absolute inset-0 bg-white/40 transition-colors group-hover:bg-white/20 dark:bg-slate-900/50 dark:group-hover:bg-slate-900/30" />
 
-            <div className="relative z-10 p-4 h-full flex flex-col justify-between">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground/80">
-                    {stat.label}
-                  </p>
-                  <div className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
-                    {stat.value}
-                  </div>
-                </div>
+            <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-4 text-center">
+              <stat.icon
+                className={`
+      h-10 w-10 sm:h-12 sm:w-12
+      transition-transform duration-300
+      group-hover:scale-110
+      ${stat.textColor}
+    `}
+                strokeWidth={1.5}
+              />
 
-                {/* Big Icon */}
-                <stat.icon
-                  className={`h-10 w-10 transition-transform duration-300 group-hover:scale-110 opacity-80 ${stat.textColor}`}
-                  strokeWidth={1.5}
-                />
+              <div className="text-sm sm:text-base font-semibold tracking-tight">
+                {stat.label}
               </div>
             </div>
           </Link>
