@@ -53,8 +53,8 @@ export function DashboardPage() {
   return (
     <div className="p-4 md:p-6 space-y-6">
       <UserBanner />
-
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+      {/* With Stats */}
+      {/* <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {stats.map((stat) => (
           <Link
             key={stat.label}
@@ -90,6 +90,55 @@ export function DashboardPage() {
                   strokeWidth={1.5}
                 />
               </div>
+            </div>
+          </Link>
+        ))}
+      </div> */}
+
+      {/* Without Stats */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        {stats.map((stat) => (
+          <Link
+            key={stat.label}
+            to={stat.href}
+            className={`
+        group relative overflow-hidden
+        min-h-[120px]
+        rounded-lg border
+        transition-all duration-300
+        active:scale-[0.95]
+        hover:shadow-md
+        ${stat.borderColor}
+        ${stat.bgGradient}
+      `}
+          >
+            {/* glass layer */}
+            <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm transition-colors group-hover:bg-white/40 dark:group-hover:bg-slate-900/40" />
+
+            {/* subtle glow */}
+            <div
+              className={`
+          pointer-events-none absolute inset-0
+          opacity-20
+          ${stat.textColor.replace("text", "bg")}
+        `}
+            />
+
+            {/* content */}
+            <div className="relative z-10 flex h-full flex-col items-center justify-center gap-3 p-4 text-center">
+              <stat.icon
+                className={`
+            h-10 w-10 sm:h-12 sm:w-12
+            transition-transform duration-300
+            group-hover:scale-110
+            ${stat.textColor}
+          `}
+                strokeWidth={1.5}
+              />
+
+              <span className="text-sm sm:text-base font-semibold tracking-tight text-slate-700 dark:text-slate-200">
+                {stat.label}
+              </span>
             </div>
           </Link>
         ))}

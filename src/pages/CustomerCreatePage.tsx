@@ -13,7 +13,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Save, Building2, Phone, Tag, Hash } from "lucide-react";
+import {
+  Loader2,
+  Save,
+  Building2,
+  Phone,
+  Tag,
+  Hash,
+  AlertTriangle,
+  X,
+} from "lucide-react";
 import { useToast } from "@/store/useToast";
 import { PageHeader } from "@/components/layout/PageHeader";
 
@@ -21,6 +30,7 @@ export function CustomerCreatePage() {
   const navigate = useNavigate();
   const { addToast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [customer, setCustomer] = useState<Partial<Customer>>({
     xorg: "",
     xtitle: "",
@@ -134,8 +144,14 @@ export function CustomerCreatePage() {
     return true;
   };
 
+  const handleCreateRequest = () => {
+    if (validate()) {
+      setShowConfirmModal(true);
+    }
+  };
+
   const handleCreate = async () => {
-    if (!validate()) return;
+    setShowConfirmModal(false);
 
     const finalData = { ...customer };
 
@@ -453,7 +469,7 @@ export function CustomerCreatePage() {
         {/* Submit Button at Bottom */}
         <div className="mt-8 flex justify-center">
           <Button
-            onClick={handleCreate}
+            onClick={handleCreateRequest}
             disabled={saving}
             className="w-full max-w-md h-12 rounded-xl bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20 transition-all active:scale-95 text-base font-bold"
           >
@@ -466,6 +482,81 @@ export function CustomerCreatePage() {
           </Button>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+          <div
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-300"
+            onClick={() => !saving && setShowConfirmModal(false)}
+          />
+          <Card className="relative w-full max-w-sm overflow-hidden rounded-3xl border-none shadow-2xl animate-in zoom-in-95 fade-in duration-300">
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-primary" />
+            <CardHeader className="flex flex-row items-center justify-between pb-2 pt-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 dark:bg-amber-900/20 text-amber-500">
+                <AlertTriangle className="h-6 w-6" />
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowConfirmModal(false)}
+                className="rounded-xl h-8 w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4 pb-8">
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  Confirm Creation
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Are you sure you want to create this customer?
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-slate-50 dark:bg-slate-900/50 p-4 border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200/50 dark:ring-slate-700">
+                    <Building2 className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      Customer Name
+                    </p>
+                    <p className="truncate text-sm font-semibold text-slate-700 dark:text-slate-200">
+                      {customer.xorg}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowConfirmModal(false)}
+                  disabled={saving}
+                  className="rounded-xl h-11 border-slate-200 dark:border-slate-800 font-semibold"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCreate}
+                  disabled={saving}
+                  className="rounded-xl h-11 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 font-semibold"
+                >
+                  {saving ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  Confirm
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
