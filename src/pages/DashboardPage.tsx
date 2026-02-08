@@ -85,8 +85,6 @@ export function DashboardPage() {
                     {stat.value}
                   </div>
                 </div>
-
-                {/* Big Icon */}
                 <stat.icon
                   className={`h-10 w-10 transition-transform duration-300 group-hover:scale-110 opacity-80 ${stat.textColor}`}
                   strokeWidth={1.5}

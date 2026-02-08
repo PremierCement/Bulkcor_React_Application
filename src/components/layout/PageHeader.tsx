@@ -14,6 +14,9 @@ const routeLabels: Record<string, string> = {
   collections: "Collections",
   "sales-return": "Sales Return",
   "sales-report": "Sales Report",
+  "collection-report": "Collection Report",
+  "return-report": "Return Report",
+  "pre-order-report": "Pre Order Report",
 };
 
 export function PageHeader() {

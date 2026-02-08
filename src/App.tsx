@@ -63,7 +63,13 @@ const router = createBrowserRouter([
           },
           {
             path: "reports",
-            element: <ReportsPage />,
+            children: [
+              { index: true, element: <ReportsPage /> },
+              { path: "sales-report", element: <NotFoundPage /> },
+              { path: "collection-report", element: <NotFoundPage /> },
+              { path: "return-report", element: <NotFoundPage /> },
+              { path: "pre-order-report", element: <NotFoundPage /> },
+            ],
           },
           {
             path: "settings",

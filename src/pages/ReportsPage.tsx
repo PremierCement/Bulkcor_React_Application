@@ -11,7 +11,7 @@ export function ReportsPage() {
     {
       label: "Sales Report",
       icon: FileChartColumn,
-      href: "/sales-report",
+      href: "sales-report",
       textColor: "text-emerald-600 dark:text-emerald-400",
       bgGradient:
         "bg-gradient-to-br from-emerald-500/20 via-emerald-500/5 to-transparent",
@@ -22,7 +22,7 @@ export function ReportsPage() {
       label: "Collection Report",
       value: "45",
       icon: FileChartPie,
-      href: "/collection-report",
+      href: "collection-report",
       textColor: "text-blue-600 dark:text-blue-400",
       bgGradient:
         "bg-gradient-to-br from-blue-500/20 via-blue-500/5 to-transparent",
@@ -33,7 +33,7 @@ export function ReportsPage() {
       label: "Return Report",
       value: "1220",
       icon: FileOutput,
-      href: "/return-report",
+      href: "return-report",
       textColor: "text-purple-600 dark:text-purple-400",
       bgGradient:
         "bg-gradient-to-br from-purple-500/20 via-purple-500/5 to-transparent",
@@ -44,7 +44,7 @@ export function ReportsPage() {
       label: "Pre Order Report",
       value: "850",
       icon: FileUp,
-      href: "/pre-order-report",
+      href: "pre-order-report",
       textColor: "text-orange-600 dark:text-orange-400",
       bgGradient:
         "bg-gradient-to-br from-orange-500/20 via-orange-500/5 to-transparent",
