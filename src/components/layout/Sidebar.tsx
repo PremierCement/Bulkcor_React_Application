@@ -37,16 +37,16 @@ export function Sidebar({ onClose, className }: SidebarProps) {
   return (
     <div
       className={cn(
-        "flex h-full flex-col border-r bg-white dark:border-slate-800 dark:bg-slate-900 transition-colors",
+        "flex h-full flex-col border-r bg-white dark:border-slate-800 dark:bg-slate-900",
         className,
       )}
     >
-      <div className="flex h-16 items-center justify-between px-3 border-b bg-white dark:border-slate-800 dark:bg-slate-900 transition-colors">
+      <div className="flex h-16 items-center justify-between px-3 border-b bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-2">
           <img
             src={Logo}
             alt="Bulkcor Logo"
-            className="h-18 w-auto flex-shrink-0"
+            className="h-12 w-auto flex-shrink-0"
           />
           <div className="flex flex-col leading-none">
             <span className="text-lg font-bold uppercase tracking-tight text-slate-700 dark:text-slate-200">

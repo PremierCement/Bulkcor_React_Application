@@ -34,7 +34,7 @@ export function PageHeader() {
       currentPath.slice(1).replace(/-/g, " ");
 
   return (
-    <div className="mb-6 flex items-center gap-4">
+    <div className="sticky top-0 z-30 flex items-center gap-4 bg-slate-50/80 px-4 py-4 md:px-6 backdrop-blur-md transition-colors dark:bg-slate-950/80 border-b dark:border-slate-800">
       <Button
         variant="ghost"
         size="icon"

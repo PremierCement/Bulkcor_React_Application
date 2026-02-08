@@ -6,6 +6,7 @@ import { DashboardPage } from "@/pages/DashboardPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ProtectedRoute, PublicRoute } from "@/components/auth/AuthRoute";
 import { ReportsPage } from "./pages/ReportsPage";
+import { CustomerListPage } from "@/pages/CustomerListPage";
 
 const router = createBrowserRouter([
   {
@@ -39,7 +40,7 @@ const router = createBrowserRouter([
           },
           {
             path: "customer-list",
-            element: <NotFoundPage />,
+            element: <CustomerListPage />,
           },
           {
             path: "knowledge",
