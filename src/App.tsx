@@ -7,6 +7,8 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 import { ProtectedRoute, PublicRoute } from "@/components/auth/AuthRoute";
 import { ReportsPage } from "./pages/ReportsPage";
 import { CustomerListPage } from "@/pages/CustomerListPage";
+import { CustomerDetailsPage } from "@/pages/CustomerDetailsPage";
+import { CustomerCreatePage } from "@/pages/CustomerCreatePage";
 
 const router = createBrowserRouter([
   {
@@ -41,6 +43,14 @@ const router = createBrowserRouter([
           {
             path: "customer-list",
             element: <CustomerListPage />,
+          },
+          {
+            path: "customer-list/new",
+            element: <CustomerCreatePage />,
+          },
+          {
+            path: "customer-list/:xcus",
+            element: <CustomerDetailsPage />,
           },
           {
             path: "knowledge",

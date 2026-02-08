@@ -4,10 +4,10 @@ import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ToastContainer } from "@/components/ui/toast-container";
 
 export function MainLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -28,6 +28,7 @@ export function MainLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 transition-colors dark:bg-slate-950">
+      <ToastContainer />
       {/* Desktop Sidebar */}
       <aside className="hidden w-64 md:block border-r dark:border-slate-800">
         <Sidebar className="w-64" />
@@ -50,8 +51,7 @@ export function MainLayout() {
           onScroll={handleScroll}
           className="flex-1 overflow-y-auto relative"
         >
-          <PageHeader />
-          <div className="mx-auto max-w-7xl p-4 md:p-6 pb-20 md:pb-6">
+          <div className="mx-auto max-w-7xl pb-20 md:pb-6">
             <Outlet />
           </div>
 
