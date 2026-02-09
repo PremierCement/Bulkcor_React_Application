@@ -9,6 +9,8 @@ import { ReportsPage } from "./pages/ReportsPage";
 import { CustomerListPage } from "@/pages/CustomerListPage";
 import { CustomerDetailsPage } from "@/pages/CustomerDetailsPage";
 import { CustomerCreatePage } from "@/pages/CustomerCreatePage";
+import { OrderPlacementPage } from "@/pages/OrderPlacementPage";
+import { OrderCreatePage } from "@/pages/OrderCreatePage";
 
 const router = createBrowserRouter([
   {
@@ -38,7 +40,11 @@ const router = createBrowserRouter([
           },
           {
             path: "order-placement",
-            element: <NotFoundPage />,
+            element: <OrderPlacementPage />,
+          },
+          {
+            path: "order-placement/:xcus",
+            element: <OrderCreatePage />,
           },
           {
             path: "customer-list",
