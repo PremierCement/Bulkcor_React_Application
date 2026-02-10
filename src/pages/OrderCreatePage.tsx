@@ -22,6 +22,9 @@ import { customerService } from "@/services/customer.service";
 import type { Product, Category } from "@/types/product";
 import type { Customer } from "@/types/customer";
 import { Loader2 } from "lucide-react";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useToast } from "@/store/useToast";
+import { salesService } from "@/services/sales.service";
 
 interface CartItem {
   product: Product;
@@ -57,6 +60,13 @@ export function OrderCreatePage() {
   const [modalQty, setModalQty] = useState<string>("1");
   const [modalFractionQty, setModalFractionQty] = useState<string>("0");
   const [modalFocQty, setModalFocQty] = useState<string>("0");
+
+  const [saleType, setSaleType] = useState<string>("Cash");
+  const [remarks, setRemarks] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { user } = useAuthStore();
+  const { addToast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -172,6 +182,70 @@ export function OrderCreatePage() {
   const cartArray = Object.values(cart);
   const cartTotal = cartArray.reduce((acc, item) => acc + item.total, 0);
   const cartItemsCount = cartArray.length;
+
+  const handleConfirmOrder = async () => {
+    if (cartArray.length === 0) return;
+    setIsSubmitting(true);
+
+    try {
+      const orderData = {
+        xpayamt: Number(cartTotal.toFixed(2)),
+        xcus: xcus || "",
+        xwh: user?.xwh || "Amin Bazar Ghat",
+        xdatecom: new Date().toISOString().split("T")[0],
+        xtypeloc: saleType,
+        xtotamt: Number(
+          cartArray.reduce((acc, i) => acc + i.total, 0).toFixed(2),
+        ),
+        xnote: remarks,
+        xsp: user?.username || "SysAdmin",
+        xstatuschl: "Confirmed",
+        xstatustrn: "Order",
+        xdtwotax: Number(
+          cartArray.reduce((acc, i) => acc + i.subtotal, 0).toFixed(6),
+        ),
+        xdttax: Number(
+          cartArray.reduce((acc, i) => acc + i.vatAmount, 0).toFixed(2),
+        ),
+        xchgtot: Number(
+          cartArray.reduce((acc, i) => acc + i.dutyAmount, 0).toFixed(2),
+        ),
+        xchlnum: cartArray.map((item, index) => ({
+          xline: index + 1,
+          xqtychl: item.totalPcs,
+          xqty: item.qty,
+          xrate: Number(parseFloat(item.product.xstdprice).toFixed(2)),
+          xdtwotax: Number(item.subtotal.toFixed(6)),
+          xdttax: Number(item.vatAmount.toFixed(2)),
+          xchgtot: Number(item.dutyAmount.toFixed(2)),
+          xlineamt: Number(item.total.toFixed(2)),
+          xitem: item.product.xitem,
+          xunitsel: item.product.xunitpur || "Ctn",
+          xwtunit: Number(parseFloat(item.product.xcfsel).toFixed(2)),
+          xtypeloc: "yes",
+          xqtyfoc: item.focQty,
+          xbonqty: item.fractionQty,
+          xdutychg: Number(parseFloat(item.product.xdutychg).toFixed(2)),
+          xvatchg: Number(parseFloat(item.product.xvatchg).toFixed(2)),
+        })),
+      };
+
+      // console.log("Submitting Order Data:", JSON.stringify(orderData, null, 2));
+
+      await salesService.confirmOrder(orderData);
+      addToast("Order placed successfully!", "success");
+      setCart({});
+      setShowSummary(false);
+      setRemarks("");
+      setSaleType("Cash");
+      navigate("/customer-list");
+    } catch (error) {
+      console.error("Order failed", error);
+      addToast("Failed to place order. Please try again.", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -519,7 +593,8 @@ export function OrderCreatePage() {
                   </div>
                   <div className="flex justify-between text-xs font-medium text-slate-500">
                     <span>
-                      Exc. Duty ({parseFloat(selectedProduct.xdutychg).toFixed(1)}%)
+                      Exc. Duty (
+                      {parseFloat(selectedProduct.xdutychg).toFixed(1)}%)
                     </span>
                     <span>
                       AED{" "}
@@ -596,7 +671,11 @@ export function OrderCreatePage() {
                 </h2>
               </div>
               <button
-                onClick={() => setCart({})}
+                onClick={() => {
+                  setCart({});
+                  setSaleType("Cash");
+                  setRemarks("");
+                }}
                 className="text-red-500 text-[10px] font-semibold uppercase tracking-widest p-2"
               >
                 Clear All
@@ -663,52 +742,90 @@ export function OrderCreatePage() {
             </div>
 
             {cartArray.length > 0 && (
-              <div className="p-6 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm font-medium text-slate-500">
-                    <span>Subtotal</span>
-                    <span>
-                      AED{" "}
-                      {cartArray
-                        .reduce((acc, i) => acc + i.subtotal, 0)
-                        .toLocaleString()}
-                    </span>
+              <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 space-y-3">
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 space-y-3">
+                  {/* Totals Breakdown */}
+                  <div className="space-y-1.5 border-b border-slate-200 dark:border-slate-700 pb-3 text-[11px] font-medium text-slate-500">
+                    <div className="flex justify-between">
+                      <span>Subtotal</span>
+                      <span>
+                        AED{" "}
+                        {cartArray
+                          .reduce((acc, i) => acc + i.subtotal, 0)
+                          .toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Exc. Duty</span>
+                      <span>
+                        AED{" "}
+                        {cartArray
+                          .reduce((acc, i) => acc + i.dutyAmount, 0)
+                          .toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>VAT</span>
+                      <span>
+                        AED{" "}
+                        {cartArray
+                          .reduce((acc, i) => acc + i.vatAmount, 0)
+                          .toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 mt-1 border-t border-slate-100 dark:border-slate-800">
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">
+                        Grand Total
+                      </span>
+                      <span className="text-xl font-bold text-primary">
+                        AED {cartTotal.toLocaleString()}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between text-sm font-medium text-slate-500">
-                    <span>Total Exc. Duty</span>
-                    <span>
-                      AED{" "}
-                      {cartArray
-                        .reduce((acc, i) => acc + i.dutyAmount, 0)
-                        .toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm font-medium text-slate-500">
-                    <span>Total VAT</span>
-                    <span>
-                      AED{" "}
-                      {cartArray
-                        .reduce((acc, i) => acc + i.vatAmount, 0)
-                        .toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-t border-slate-100 dark:border-slate-800 mt-2">
-                    <span className="text-lg font-semibold text-slate-900 dark:text-white">
-                      Grand Total
-                    </span>
-                    <span className="text-2xl font-semibold text-primary">
-                      AED {cartTotal.toLocaleString()}
-                    </span>
+
+                  {/* Sale Type & Remarks compact */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                        Sale Type
+                      </label>
+                      <select
+                        value={saleType}
+                        onChange={(e) => setSaleType(e.target.value)}
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold focus:ring-1 focus:ring-primary transition-all p-2 h-9"
+                      >
+                        <option value="Cash">Cash</option>
+                        <option value="Credit">Credit</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                        Remarks (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={remarks}
+                        onChange={(e) => setRemarks(e.target.value)}
+                        placeholder="Notes..."
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs focus:ring-1 focus:ring-primary transition-all p-2 h-9"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 <button
-                  onClick={() =>
-                    alert("CONFIRM POST action will be implemented later")
-                  }
-                  className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-3xl font-semibold text-sm shadow-2xl active:scale-95 transition-all flex items-center justify-center gap-2"
+                  onClick={handleConfirmOrder}
+                  disabled={isSubmitting}
+                  className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  CONFIRM ORDER
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      PLACING ORDER...
+                    </>
+                  ) : (
+                    "CONFIRM ORDER"
+                  )}
                 </button>
               </div>
             )}
