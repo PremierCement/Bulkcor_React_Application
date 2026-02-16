@@ -11,6 +11,8 @@ import { CustomerDetailsPage } from "@/pages/CustomerDetailsPage";
 import { CustomerCreatePage } from "@/pages/CustomerCreatePage";
 import { OrderPlacementPage } from "@/pages/OrderPlacementPage";
 import { OrderCreatePage } from "@/pages/OrderCreatePage";
+import { PreOrderPlacementPage } from "@/pages/PreOrderPlacementPage";
+import { PreOrderCreatePage } from "@/pages/PreOrderCreatePage";
 
 const router = createBrowserRouter([
   {
@@ -64,7 +66,11 @@ const router = createBrowserRouter([
           },
           {
             path: "pre-orders",
-            element: <NotFoundPage />,
+            element: <PreOrderPlacementPage />,
+          },
+          {
+            path: "pre-orders/:xcus",
+            element: <PreOrderCreatePage />,
           },
           {
             path: "collections",

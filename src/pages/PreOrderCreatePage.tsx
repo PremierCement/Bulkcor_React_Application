@@ -11,10 +11,6 @@ import {
   Package,
   CheckCircle2,
   Trash2,
-  History,
-  Calendar,
-  Clock,
-  PackageSearch,
   Pencil,
 } from "lucide-react";
 import { productService } from "@/services/product.service";
@@ -39,7 +35,7 @@ interface CartItem {
   total: number;
 }
 
-export function OrderCreatePage() {
+export function PreOrderCreatePage() {
   const { xcus } = useParams<{ xcus: string }>();
   const navigate = useNavigate();
 
@@ -52,19 +48,15 @@ export function OrderCreatePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [showSummary, setShowSummary] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-  const [historyTab, setHistoryTab] = useState<"today" | "pre">("today");
-  const [historyOrders, setHistoryOrders] = useState<any[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [activeChallan, setActiveChallan] = useState<string | null>(null);
+  const [saleType, setSaleType] = useState<string>("Cash");
 
   // Qty input state for modal
   const [modalQty, setModalQty] = useState<string>("1");
   const [modalFractionQty, setModalFractionQty] = useState<string>("0");
   const [modalFocQty, setModalFocQty] = useState<string>("0");
 
-  const [saleType, setSaleType] = useState<string>("Cash");
+  const [orderDate, setOrderDate] = useState<string>("");
   const [remarks, setRemarks] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -92,35 +84,6 @@ export function OrderCreatePage() {
     };
     fetchData();
   }, [xcus]);
-
-  useEffect(() => {
-    const fetchHistory = async () => {
-      if (!xcus || !showHistory) return;
-      setHistoryLoading(true);
-      try {
-        const today = new Date().toISOString().split("T")[0];
-        let response;
-        if (historyTab === "today") {
-          response = await salesService.getOrders(xcus, today);
-        } else {
-          response = await salesService.getPreOrders(xcus, today);
-        }
-
-        if (response.status && Array.isArray(response.data)) {
-          setHistoryOrders(response.data);
-        } else {
-          setHistoryOrders([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch history", error);
-        setHistoryOrders([]);
-      } finally {
-        setHistoryLoading(false);
-      }
-    };
-
-    fetchHistory();
-  }, [xcus, historyTab, showHistory]);
 
   // Scroll to top when category or search term changes
   useEffect(() => {
@@ -215,58 +178,14 @@ export function OrderCreatePage() {
   const cartTotal = cartArray.reduce((acc, item) => acc + item.total, 0);
   const cartItemsCount = cartArray.length;
 
-  const handleLoadPreOrder = async (xchlnum: string) => {
-    setHistoryLoading(true);
-    try {
-      const response = await salesService.getSaleDetails(xchlnum);
-      if (response.status && Array.isArray(response.data)) {
-        const newCart: Record<string, CartItem> = {};
-
-        // We need to map the API response to our CartItem structure
-        // Note: The API response has most fields, but we align with our Product type where possible
-        response.data.forEach((item: any) => {
-          // Find the product in our local products list to get full details if needed
-          const product = products.find((p) => p.xitem === item.xitem);
-
-          if (product) {
-            const qty = parseFloat(item.xqty);
-            // const rate = parseFloat(item.xrate); // Unused
-            const subtotal = parseFloat(item.xdtwotax);
-            const vatAmount = parseFloat(item.xdttax);
-            const dutyAmount = parseFloat(item.xchgtot); // xchgtot seems to map to dutyAmount in confirmOrder
-            const total = parseFloat(item.xlineamt); // xlineamt seems to be the total line amount
-            const fractionQty = parseFloat(item.xbonqty || "0");
-            const focQty = parseFloat(item.xqtyfoc || "0");
-            newCart[item.xitem] = {
-              product: product,
-              qty: qty,
-              fractionQty: fractionQty,
-              focQty: focQty,
-              totalPcs: qty * parseFloat(product.xcfsel) + fractionQty, // Approximating totalPcs logic
-              subtotal: subtotal,
-              dutyAmount: dutyAmount,
-              vatAmount: vatAmount,
-              taxAmount: 0, // Not explicitly in response, maybe 0
-              total: total,
-            };
-          }
-        });
-
-        setCart(newCart);
-        setActiveChallan(xchlnum);
-        setShowHistory(false);
-        addToast("Pre-order loaded successfully", "success");
-      }
-    } catch (error) {
-      console.error("Failed to load pre-order", error);
-      addToast("Failed to load pre-order details", "error");
-    } finally {
-      setHistoryLoading(false);
-    }
-  };
-
   const handleConfirmOrder = async () => {
     if (cartArray.length === 0) return;
+
+    if (!orderDate) {
+      addToast("Please select an order date.", "error");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -275,14 +194,15 @@ export function OrderCreatePage() {
         xcus: xcus || "",
         xwh: user?.xwh || "Amin Bazar Ghat",
         xdatecom: new Date().toISOString().split("T")[0],
+        xdaterev: orderDate,
         xtypeloc: saleType,
         xtotamt: Number(
           cartArray.reduce((acc, i) => acc + i.total, 0).toFixed(2),
         ),
         xnote: remarks,
         xsp: user?.username || "SysAdmin",
-        xstatuschl: "Confirmed",
-        xstatustrn: "Order",
+        xstatuschl: "Open",
+        xstatustrn: "Pre Order",
         xdtwotax: Number(
           cartArray.reduce((acc, i) => acc + i.subtotal, 0).toFixed(6),
         ),
@@ -315,20 +235,14 @@ export function OrderCreatePage() {
 
       // console.log("Submitting Order Data:", JSON.stringify(orderData, null, 2));
 
-      if (activeChallan) {
-        await salesService.updateSale(activeChallan, orderData);
-        addToast("Order updated successfully!", "success");
-      } else {
-        await salesService.confirmOrder(orderData);
-        addToast("Order placed successfully!", "success");
-      }
-
+      await salesService.confirmOrder(orderData);
+      addToast("Pre-Order placed successfully!", "success");
       setCart({});
       setShowSummary(false);
       setRemarks("");
       setSaleType("Cash");
-      setActiveChallan(null);
-      navigate("/order-placement");
+      setOrderDate("");
+      navigate("/pre-orders");
     } catch (error) {
       console.error("Order failed", error);
       addToast("Failed to place order. Please try again.", "error");
@@ -364,12 +278,7 @@ export function OrderCreatePage() {
               ID: {customer?.xcus} • {customer?.xstate}
             </p>
           </div>
-          <button
-            onClick={() => setShowHistory(true)}
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
-          >
-            <History className="h-6 w-6 text-slate-500" />
-          </button>
+
           <button
             onClick={() => setShowSummary(true)}
             className="relative p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
@@ -888,7 +797,20 @@ export function OrderCreatePage() {
                         <option value="Credit">Credit</option>
                       </select>
                     </div>
+
                     <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                        Order Date
+                      </label>
+                      <input
+                        type="date"
+                        value={orderDate}
+                        onChange={(e) => setOrderDate(e.target.value)}
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold focus:ring-1 focus:ring-primary transition-all p-2 h-9"
+                      />
+                    </div>
+
+                    <div className="space-y-1 col-span-2">
                       <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                         Remarks (Optional)
                       </label>
@@ -919,118 +841,6 @@ export function OrderCreatePage() {
                 </button>
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* History View Overlay */}
-      {showHistory && (
-        <div className="fixed inset-0 z-[60] flex justify-end animate-in fade-in duration-300">
-          <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm hidden md:block"
-            onClick={() => setShowHistory(false)}
-          />
-          <div className="relative w-full md:w-[450px] bg-white dark:bg-slate-950 shadow-2xl animate-in slide-in-from-right duration-500 h-full flex flex-col">
-            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setShowHistory(false)}
-                  className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </button>
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mt-1">
-                  Order History
-                </h2>
-              </div>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex px-4 gap-6 border-b border-slate-200 dark:border-slate-800">
-              <button
-                onClick={() => setHistoryTab("today")}
-                className={`pb-3 pt-4 text-xs font-semibold transition-all relative ${
-                  historyTab === "today"
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  Today's Orders
-                </div>
-              </button>
-              <button
-                onClick={() => setHistoryTab("pre")}
-                className={`pb-3 pt-4 text-xs font-semibold transition-all relative ${
-                  historyTab === "pre"
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Pre Orders
-                </div>
-              </button>
-            </div>
-
-            <div className="flex-1 flex flex-col p-4 w-full h-full">
-              {historyLoading ? (
-                <div className="flex flex-1 items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              ) : historyOrders.length > 0 ? (
-                <div className="flex-1 overflow-y-auto space-y-3">
-                  {historyOrders.map((order, index) => (
-                    <div
-                      key={index}
-                      className={`bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700 ${historyTab === "pre" ? "cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" : ""}`}
-                      onClick={() => {
-                        if (historyTab === "pre") {
-                          handleLoadPreOrder(order.xchlnum);
-                        }
-                      }}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase tracking-wider">
-                            {order.xchlnum}
-                          </span>
-                          <p className="text-[10px] text-slate-500 mt-1">
-                            {order.xdaterev || order.xdate}
-                          </p>
-                        </div>
-                        <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded">
-                          {order.xtotamt} BDT
-                        </span>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xs text-slate-700 dark:text-slate-300">
-                          {order.xnote}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4">
-                  <div className="h-20 w-20 bg-slate-50 dark:bg-slate-900 rounded-3xl flex items-center justify-center ring-1 ring-slate-100 dark:ring-slate-800">
-                    <PackageSearch className="h-10 w-10 text-slate-300" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="font-semibold text-slate-900 dark:text-white">
-                      No orders found
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[200px]">
-                      {historyTab === "today"
-                        ? "There are no orders placed today for this customer."
-                        : "There are no pre-orders scheduled for this customer."}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       )}
