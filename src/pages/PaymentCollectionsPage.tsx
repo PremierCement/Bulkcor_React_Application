@@ -32,12 +32,10 @@ export default function PaymentCollectionsPage() {
   const { user } = useAuthStore();
   const { addToast } = useToast();
 
-  // View State for Selection
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null,
   );
 
-  // Customer Picking Logic (from OrderPlacementPage)
   const {
     selectedState,
     selectedZone,
@@ -66,7 +64,6 @@ export default function PaymentCollectionsPage() {
   const [invoices, setInvoices] = useState<PendingInvoice[]>([]);
   const [banks, setBanks] = useState<Bank[]>([]);
 
-  // Form State
   const [paymentMode, setPaymentMode] = useState<"Cash" | "Bank">("Cash");
   const [selectedBank, setSelectedBank] = useState<string>("");
   const [branchName, setBranchName] = useState<string>("");
@@ -82,7 +79,6 @@ export default function PaymentCollectionsPage() {
     new Set(),
   );
 
-  // Handle Params Change
   useEffect(() => {
     if (xcus) {
       fetchCustomerData(xcus);
@@ -103,7 +99,6 @@ export default function PaymentCollectionsPage() {
       setBalance(balanceData.xbalance);
       setInvoices(invoicesData);
 
-      // Reset form
       setPaymentAmounts({});
       setSelectedInvoices(new Set());
       setPaymentMode("Cash");
@@ -269,8 +264,11 @@ export default function PaymentCollectionsPage() {
   };
 
   const totalAmount = useMemo(() => {
-    return Object.values(paymentAmounts).reduce((sum, val) => sum + val, 0);
-  }, [paymentAmounts]);
+    const sum = Array.from(selectedInvoices).reduce((acc, chlnum) => {
+      return acc + (paymentAmounts[chlnum] || 0);
+    }, 0);
+    return Number(sum.toFixed(2));
+  }, [selectedInvoices, paymentAmounts]);
 
   const handleSubmit = async () => {
     if (selectedInvoices.size === 0) {
@@ -278,9 +276,19 @@ export default function PaymentCollectionsPage() {
       return;
     }
 
-    if (paymentMode === "Bank" && !selectedBank) {
-      addToast("Please select a bank", "error");
-      return;
+    if (paymentMode === "Bank") {
+      if (!selectedBank) {
+        addToast("Please select a bank", "error");
+        return;
+      }
+      if (!branchName.trim()) {
+        addToast("Please enter the branch name", "error");
+        return;
+      }
+      if (!transactionRef.trim()) {
+        addToast("Please enter the reference/cheque number", "error");
+        return;
+      }
     }
 
     setLoading((prev) => ({ ...prev, submitting: true }));
@@ -289,7 +297,7 @@ export default function PaymentCollectionsPage() {
         xdate: paymentDate,
         xcus: selectedCustomer!.xcus,
         xpaymode: paymentMode,
-        xprime: totalAmount.toString(),
+        xprime: totalAmount.toFixed(2),
         xcreatedby: user?.username || "system",
         xcheque: transactionRef,
         xbank: selectedBank,
@@ -297,7 +305,7 @@ export default function PaymentCollectionsPage() {
         xnote: note,
         payment_details: Array.from(selectedInvoices).map((chlnum) => ({
           xchlnum: chlnum,
-          xpayamt: paymentAmounts[chlnum] || 0,
+          xpayamt: Number((paymentAmounts[chlnum] || 0).toFixed(2)),
           xstatus: "Open",
         })),
       };
@@ -316,7 +324,6 @@ export default function PaymentCollectionsPage() {
   if (xcus && selectedCustomer) {
     return (
       <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 pb-32">
-        {/* Compact Header matching OrderCreatePage */}
         <div className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
           <div className="px-4 py-3 flex items-center gap-3">
             <button
@@ -354,9 +361,8 @@ export default function PaymentCollectionsPage() {
 
         <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left Column: Form Details */}
             <div className="lg:col-span-12 xl:col-span-5 space-y-6">
-              <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-200/60 dark:border-slate-800/60 shadow-sm p-6 space-y-6">
+              <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-blue-600/70 dark:border-slate-800/60 shadow-sm p-6 space-y-6">
                 <div className="flex items-center gap-3">
                   <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
                     <CreditCard className="h-4.5 w-4.5 text-primary" />
@@ -369,7 +375,6 @@ export default function PaymentCollectionsPage() {
                 </div>
 
                 <div className="space-y-6">
-                  {/* Mode Toggles */}
                   <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl gap-1">
                     <button
                       onClick={() => setPaymentMode("Cash")}
@@ -396,7 +401,6 @@ export default function PaymentCollectionsPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                    {/* Date Selection */}
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-medium text-slate-400 uppercase tracking-widest ml-1">
                         Collection Date
@@ -412,19 +416,21 @@ export default function PaymentCollectionsPage() {
                       </div>
                     </div>
 
-                    {/* Bank Selection */}
                     {paymentMode === "Bank" && (
                       <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="space-y-1.5">
-                          <label className="text-[10px] font-medium text-slate-400 uppercase tracking-widest ml-1">
-                            Bank
+                          <label className="text-[10px] font-medium text-slate-400 uppercase tracking-widest ml-1 flex items-center">
+                            Bank{" "}
+                            <span className="text-red-500 ml-1 font-bold">
+                              *
+                            </span>
                           </label>
                           <div className="relative">
                             <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
                             <select
                               value={selectedBank}
                               onChange={(e) => setSelectedBank(e.target.value)}
-                              className="w-full pl-11 pr-10 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none"
+                              className="w-full pl-11 pr-10 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm  focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none"
                             >
                               <option value="">Choose a Bank</option>
                               {banks.map((bank) => (
@@ -441,8 +447,11 @@ export default function PaymentCollectionsPage() {
 
                         <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-medium text-slate-400 uppercase tracking-widest ml-1">
-                              Branch
+                            <label className="text-[10px] font-medium text-slate-400 uppercase tracking-widest ml-1 flex items-center">
+                              Branch{" "}
+                              <span className="text-red-500 ml-1 font-bold">
+                                *
+                              </span>
                             </label>
                             <input
                               type="text"
@@ -453,8 +462,11 @@ export default function PaymentCollectionsPage() {
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-medium text-slate-400 uppercase tracking-widest ml-1">
-                              Ref/CHQ
+                            <label className="text-[10px] font-medium text-slate-400 uppercase tracking-widest ml-1 flex items-center">
+                              Ref/CHQ{" "}
+                              <span className="text-red-500 ml-1 font-bold">
+                                *
+                              </span>
                             </label>
                             <input
                               type="text"
@@ -487,7 +499,6 @@ export default function PaymentCollectionsPage() {
               </div>
             </div>
 
-            {/* Right Column: Invoices */}
             <div className="lg:col-span-12 xl:col-span-7 space-y-4">
               <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-2">
@@ -586,10 +597,10 @@ export default function PaymentCollectionsPage() {
                               </p>
                             </div>
                             <div className="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                              <p className="text-[8px] uppercase font-semibold text-emerald-500 tracking-widest mb-1">
+                              <p className="text-[8px] uppercase font-semibold text-rose-500 dark:text-rose-400 tracking-widest mb-1">
                                 Unpaid
                               </p>
-                              <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                              <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">
                                 {parseFloat(invoice.xamtdue).toLocaleString()}
                               </p>
                             </div>
@@ -633,8 +644,7 @@ export default function PaymentCollectionsPage() {
           </div>
         </div>
 
-        {/* Floating Bar - Elevated for Bottom Nav on mobile, standard on desktop */}
-        <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] animate-in slide-in-from-bottom-full duration-500">
+        <div className="fixed bottom-16 md:bottom-0 left-0 md:left-64 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 p-4 md:py-[22px] shadow-[0_-8px_30px_rgba(0,0,0,0.08)] animate-in slide-in-from-bottom-full duration-500">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex flex-col">
               <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest leading-none mb-1">
@@ -708,7 +718,6 @@ export default function PaymentCollectionsPage() {
                   className="group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white p-4 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 dark:border-slate-800/60 dark:bg-slate-900 active:scale-[0.99] cursor-pointer"
                 >
                   <div className="flex flex-col gap-3">
-                    {/* Header: ID and Logo Icon */}
                     <div className="flex items-center justify-between">
                       <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-bold text-primary dark:bg-primary/20">
                         {customer.xcus}
@@ -723,14 +732,12 @@ export default function PaymentCollectionsPage() {
                       </div>
                     </div>
 
-                    {/* Organization Name */}
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight line-clamp-1">
                       {customer.xorg || "Unnamed Customer"}
                     </h3>
 
                     <div className="h-px bg-slate-50 dark:bg-slate-800/50" />
 
-                    {/* Contact Information in one row */}
                     <div className="flex items-center gap-4 text-slate-600 dark:text-slate-400">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <Phone className="h-3 w-3 shrink-0 text-emerald-500" />
@@ -750,7 +757,6 @@ export default function PaymentCollectionsPage() {
               ))}
             </div>
 
-            {/* Load More */}
             {visibleCount < filteredCustomers.length && (
               <div ref={observerTarget} className="flex justify-center py-8">
                 <div className="flex items-center gap-2 px-6 py-2.5 bg-white dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm text-slate-400 text-[11px] font-medium uppercase tracking-widest">
