@@ -84,7 +84,7 @@ export const salesService = {
     date: string,
   ): Promise<PreOrderResponse> => {
     const response = await api.get(
-      `/sales/challaninfo?cus_code=${cusCode}&pdate=${date}`,
+      `/Sales/challaninfo?cus_code=${cusCode}&pdate=${date}`,
     );
     return response.data;
   },

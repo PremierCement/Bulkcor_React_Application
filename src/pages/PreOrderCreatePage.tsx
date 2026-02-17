@@ -242,7 +242,7 @@ export function PreOrderCreatePage() {
       setRemarks("");
       setSaleType("Cash");
       setOrderDate("");
-      navigate("/pre-orders");
+      navigate("/pre-orders", { replace: true });
     } catch (error) {
       console.error("Order failed", error);
       addToast("Failed to place order. Please try again.", "error");

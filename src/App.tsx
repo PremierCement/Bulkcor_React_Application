@@ -13,6 +13,7 @@ import { OrderPlacementPage } from "@/pages/OrderPlacementPage";
 import { OrderCreatePage } from "@/pages/OrderCreatePage";
 import { PreOrderPlacementPage } from "@/pages/PreOrderPlacementPage";
 import { PreOrderCreatePage } from "@/pages/PreOrderCreatePage";
+import PaymentCollectionsPage from "@/pages/PaymentCollectionsPage";
 
 const router = createBrowserRouter([
   {
@@ -74,7 +75,11 @@ const router = createBrowserRouter([
           },
           {
             path: "collections",
-            element: <NotFoundPage />,
+            element: <PaymentCollectionsPage />,
+          },
+          {
+            path: "collections/:xcus",
+            element: <PaymentCollectionsPage />,
           },
           {
             path: "sales-return",

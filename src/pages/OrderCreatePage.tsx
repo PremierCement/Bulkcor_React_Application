@@ -94,9 +94,11 @@ export function OrderCreatePage() {
   }, [xcus]);
 
   useEffect(() => {
+    if (!showHistory || !xcus) return;
+
+    setHistoryLoading(true);
+
     const fetchHistory = async () => {
-      if (!xcus || !showHistory) return;
-      setHistoryLoading(true);
       try {
         const today = new Date().toISOString().split("T")[0];
         let response;
@@ -119,7 +121,12 @@ export function OrderCreatePage() {
       }
     };
 
-    fetchHistory();
+    // Add a small delay to allow the overlay animation to start/finish smoothly
+    const timer = setTimeout(() => {
+      fetchHistory();
+    }, 400);
+
+    return () => clearTimeout(timer);
   }, [xcus, historyTab, showHistory]);
 
   // Scroll to top when category or search term changes
@@ -328,7 +335,7 @@ export function OrderCreatePage() {
       setRemarks("");
       setSaleType("Cash");
       setActiveChallan(null);
-      navigate("/order-placement");
+      navigate("/order-placement", { replace: true });
     } catch (error) {
       console.error("Order failed", error);
       addToast("Failed to place order. Please try again.", "error");
@@ -1002,7 +1009,7 @@ export function OrderCreatePage() {
                           </p>
                         </div>
                         <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded">
-                          {order.xtotamt} BDT
+                          {Number(order.xtotamt).toFixed(2)} AED
                         </span>
                       </div>
                       <div className="space-y-1">
