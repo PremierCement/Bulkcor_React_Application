@@ -10,6 +10,8 @@ import {
   ShoppingCart,
   Sun,
   Moon,
+  Package,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,6 +27,8 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
   { icon: UserSearch, label: "Customer List", href: "/customer-list" },
   { icon: ShoppingCart, label: "Order Placement", href: "/order-placement" },
+  { icon: CreditCard, label: "Payment Collections", href: "/collections" },
+  { icon: Package, label: "Sales Return", href: "/sales-return" },
   { icon: Trophy, label: "Achievement", href: "/achievement" },
   { icon: FileChartColumn, label: "Reports", href: "/reports" },
   { icon: BookOpenText, label: "Knowledge", href: "/knowledge" },

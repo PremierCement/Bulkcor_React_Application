@@ -14,6 +14,8 @@ import { OrderCreatePage } from "@/pages/OrderCreatePage";
 import { PreOrderPlacementPage } from "@/pages/PreOrderPlacementPage";
 import { PreOrderCreatePage } from "@/pages/PreOrderCreatePage";
 import PaymentCollectionsPage from "@/pages/PaymentCollectionsPage";
+import { SalesReturnPlacementPage } from "@/pages/SalesReturnPlacementPage";
+import { SalesReturnCreatePage } from "@/pages/SalesReturnCreatePage";
 
 const router = createBrowserRouter([
   {
@@ -83,7 +85,11 @@ const router = createBrowserRouter([
           },
           {
             path: "sales-return",
-            element: <NotFoundPage />,
+            element: <SalesReturnPlacementPage />,
+          },
+          {
+            path: "sales-return/:xcus",
+            element: <SalesReturnCreatePage />,
           },
           {
             path: "achievement",

@@ -59,6 +59,40 @@ export interface SaleOrder {
   xchlnum: SaleDetail[];
 }
 
+export interface SalesReturnDetail {
+  xline: number;
+  xqtychl: number;
+  xqty: number;
+  xrate: number;
+  xdtwotax: null | number | string;
+  xdttax: null | number | string;
+  xchgtot: null | number | string;
+  xlineamt: number;
+  xitem: string;
+  xunitsel: string;
+  xwtunit: number;
+  xqtycrn: null | number | string;
+  xqtyfoc: string;
+  xdutychg: string;
+  xvatchg: string;
+}
+
+export interface SalesReturn {
+  xpayamt: number;
+  xcus: string;
+  xwh: string;
+  xdatecom: string;
+  xtypeloc: string;
+  xtotamt: string;
+  xnote: string;
+  xsp: string;
+  xretvstat: string;
+  xdtwotax: null | number | string;
+  xdttax: null | number | string;
+  xchgtot: null | number | string;
+  xtrnnum: SalesReturnDetail[];
+}
+
 export interface SaleDetailResponse {
   status: boolean;
   status_code: number;
@@ -94,6 +128,10 @@ export const salesService = {
   },
   updateSale: async (xchlnum: string, data: SaleOrder) => {
     const response = await api.put(`/sales/${xchlnum}/`, data);
+    return response.data;
+  },
+  createSalesReturn: async (data: SalesReturn) => {
+    const response = await api.post("/salesretv2/", data);
     return response.data;
   },
 };

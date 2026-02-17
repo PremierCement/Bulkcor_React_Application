@@ -312,7 +312,7 @@ export default function PaymentCollectionsPage() {
 
       await paymentService.createPaymentEntry(submission);
       addToast("Payment collected successfully", "success");
-      navigate("/collections", { replace: true });
+      navigate("/collections");
     } catch (error) {
       console.error("Failed to submit payment", error);
       addToast("Failed to submit payment", "error");
@@ -327,7 +327,7 @@ export default function PaymentCollectionsPage() {
         <div className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
           <div className="px-4 py-3 flex items-center gap-3">
             <button
-              onClick={() => navigate("/collections", { replace: true })}
+              onClick={() => navigate(-1)}
               className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
             >
               <ChevronLeft className="h-6 w-6" />
@@ -660,7 +660,7 @@ export default function PaymentCollectionsPage() {
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => navigate("/collections", { replace: true })}
+                onClick={() => navigate(-1)}
                 className="hidden sm:block px-6 py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs uppercase tracking-widest rounded-xl transition-all"
               >
                 Cancel
