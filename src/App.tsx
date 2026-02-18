@@ -16,6 +16,7 @@ import { PreOrderCreatePage } from "@/pages/PreOrderCreatePage";
 import PaymentCollectionsPage from "@/pages/PaymentCollectionsPage";
 import { SalesReturnPlacementPage } from "@/pages/SalesReturnPlacementPage";
 import { SalesReturnCreatePage } from "@/pages/SalesReturnCreatePage";
+import { SalesReportPage } from "@/pages/SalesReportPage";
 
 const router = createBrowserRouter([
   {
@@ -99,7 +100,7 @@ const router = createBrowserRouter([
             path: "reports",
             children: [
               { index: true, element: <ReportsPage /> },
-              { path: "sales-report", element: <NotFoundPage /> },
+              { path: "sales-report", element: <SalesReportPage /> },
               { path: "collection-report", element: <NotFoundPage /> },
               { path: "return-report", element: <NotFoundPage /> },
               { path: "pre-order-report", element: <NotFoundPage /> },

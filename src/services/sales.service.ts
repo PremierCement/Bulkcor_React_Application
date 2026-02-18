@@ -99,6 +99,63 @@ export interface SaleDetailResponse {
   data: any[];
 }
 
+export interface SalesReportEntry {
+  xchlnum: string;
+  xcus: string;
+  xwh: string;
+  xorg: string;
+  xdate: string;
+  xdatecom: string;
+  xdaterev: string | null;
+  xtypeloc: string;
+  xtotamt: string;
+  xpayamt: string;
+  xnote: string;
+}
+
+export interface SalesReportResponse {
+  status: boolean;
+  status_code: number;
+  data: SalesReportEntry[];
+}
+
+export interface SalesOrderDetailEntry {
+  ztime: string;
+  xchlnum: string;
+  xtype: string;
+  xline: number;
+  xdornum: string;
+  xitem: string;
+  xdesc: string;
+  xlong: string;
+  xqtycrn: string;
+  xwtunit: string;
+  xqty: string;
+  xrate: string;
+  xlineamt: string;
+  xunitsel: string;
+  xtypeloc: string;
+  xtax: string;
+  zorg: string;
+  xtotamt: string;
+  xpayamt: string;
+  xsp: string;
+  xqtyfoc: string;
+  xbonqty: string;
+  xdate: string;
+  xdutychg: string;
+  xvatchg: string;
+  xdtwotax: string;
+  xdttax: string;
+  xchgtot: string;
+}
+
+export interface SalesOrderDetailsResponse {
+  status: boolean;
+  status_code: number;
+  data: SalesOrderDetailEntry[];
+}
+
 export const salesService = {
   confirmOrder: async (data: SaleOrder) => {
     const response = await api.post("/sales/", data);
@@ -132,6 +189,21 @@ export const salesService = {
   },
   createSalesReturn: async (data: SalesReturn) => {
     const response = await api.post("/salesretv2/", data);
+    return response.data;
+  },
+  getSalesReport: async (
+    empCode: string,
+    date: string,
+  ): Promise<SalesReportResponse> => {
+    const response = await api.get(
+      `/reports/salesreports?emp_code=${empCode}&date=${date}`,
+    );
+    return response.data;
+  },
+  getOrderDetails: async (
+    xchlnum: string,
+  ): Promise<SalesOrderDetailsResponse> => {
+    const response = await api.get(`/Sales/detail?xchlnum=${xchlnum}`);
     return response.data;
   },
 };
