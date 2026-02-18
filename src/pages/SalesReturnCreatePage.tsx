@@ -25,7 +25,6 @@ interface CartItem {
   product: Product;
   qty: number;
   fractionQty: number;
-  focQty: number;
   totalPcs: number;
   subtotal: number;
   dutyAmount: number;
@@ -52,7 +51,6 @@ export function SalesReturnCreatePage() {
   // Qty input state for modal
   const [modalQty, setModalQty] = useState<string>("1");
   const [modalFractionQty, setModalFractionQty] = useState<string>("0");
-  const [modalFocQty, setModalFocQty] = useState<string>("0");
 
   const [remarks, setRemarks] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -105,7 +103,6 @@ export function SalesReturnCreatePage() {
     product: Product,
     qty: number,
     fractionQty: number,
-    focQty: number,
   ): CartItem => {
     const cf = parseFloat(product.xcfsel) || 1;
     const price = parseFloat(product.xstdprice) || 0;
@@ -119,13 +116,12 @@ export function SalesReturnCreatePage() {
     const taxAmount = dutyAmount + vatAmount;
     const total = subtotal + taxAmount;
 
-    const totalPcs = subtotalTotalPcs + focQty;
+    const totalPcs = subtotalTotalPcs;
 
     return {
       product,
       qty,
       fractionQty,
-      focQty,
       totalPcs,
       subtotal,
       dutyAmount,
@@ -140,21 +136,19 @@ export function SalesReturnCreatePage() {
 
     const qty = parseInt(modalQty) || 0;
     const fraction = parseInt(modalFractionQty) || 0;
-    const foc = parseInt(modalFocQty) || 0;
 
-    if (qty === 0 && fraction === 0 && foc === 0) {
+    if (qty === 0 && fraction === 0) {
       const newCart = { ...cart };
       delete newCart[selectedProduct.xitem];
       setCart(newCart);
     } else {
-      const item = calculateItem(selectedProduct, qty, fraction, foc);
+      const item = calculateItem(selectedProduct, qty, fraction);
       setCart({ ...cart, [selectedProduct.xitem]: item });
     }
 
     setSelectedProduct(null);
     setModalQty("1");
     setModalFractionQty("0");
-    setModalFocQty("0");
   };
 
   const openEditModal = (product: Product) => {
@@ -163,11 +157,9 @@ export function SalesReturnCreatePage() {
     if (existing) {
       setModalQty(existing.qty.toString());
       setModalFractionQty(existing.fractionQty.toString());
-      setModalFocQty(existing.focQty.toString());
     } else {
       setModalQty("1");
       setModalFractionQty("0");
-      setModalFocQty("0");
     }
   };
 
@@ -190,23 +182,29 @@ export function SalesReturnCreatePage() {
         xnote: remarks,
         xsp: user?.username || "SysAdmin",
         xretvstat: "Confirmed",
-        xdtwotax: null,
-        xdttax: null,
-        xchgtot: null,
+        xdtwotax: cartArray
+          .reduce((acc, item) => acc + item.subtotal, 0)
+          .toFixed(2),
+        xdttax: cartArray
+          .reduce((acc, item) => acc + item.vatAmount, 0)
+          .toFixed(2),
+        xchgtot: cartArray
+          .reduce((acc, item) => acc + item.dutyAmount, 0)
+          .toFixed(2),
         xtrnnum: cartArray.map((item, index) => ({
           xline: index + 1,
-          xqtychl: item.totalPcs - item.focQty,
+          xqtychl: item.totalPcs,
           xqty: item.qty,
           xrate: Number(parseFloat(item.product.xstdprice).toFixed(2)),
-          xdtwotax: null,
-          xdttax: null,
-          xchgtot: null,
+          xdtwotax: item.subtotal.toFixed(2),
+          xdttax: item.vatAmount.toFixed(2),
+          xchgtot: item.dutyAmount.toFixed(2),
           xlineamt: Number(item.total.toFixed(2)),
           xitem: item.product.xitem,
           xunitsel: item.product.xunitsel,
           xwtunit: Number(parseFloat(item.product.xcfsel).toFixed(2)),
           xqtycrn: null,
-          xqtyfoc: item.focQty.toString(),
+          xqtyfoc: "0",
           xdutychg: parseFloat(item.product.xdutychg || "0").toString(),
           xvatchg: parseFloat(item.product.xvatchg || "0").toString(),
         })),
@@ -365,7 +363,6 @@ export function SalesReturnCreatePage() {
                       parts.push(`${item.qty} ${product.xunitpur}`);
                     if (item.fractionQty > 0)
                       parts.push(`${item.fractionQty} ${product.xunitsel}`);
-                    if (item.focQty > 0) parts.push(`${item.focQty} FOC`);
                     return parts.length > 0 ? parts.join(" + ") : "0 Items";
                   })()}
                 </button>
@@ -450,10 +447,10 @@ export function SalesReturnCreatePage() {
               </div>
 
               <div className="space-y-6">
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
-                      Return Qty ({selectedProduct.xunitpur})
+                      Qty ({selectedProduct.xunitpur})
                     </label>
                     <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1">
                       <button
@@ -462,97 +459,61 @@ export function SalesReturnCreatePage() {
                             Math.max(0, parseInt(modalQty) - 1).toString(),
                           )
                         }
-                        className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                        className="p-1.5 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
                       >
-                        <Minus className="h-5 w-5" />
+                        <Minus className="h-4 w-4" />
                       </button>
                       <input
                         type="number"
                         value={modalQty}
                         onChange={(e) => setModalQty(e.target.value)}
-                        className="w-full bg-transparent border-none text-center font-semibold text-lg focus:ring-0"
+                        className="w-full bg-transparent border-none text-center font-semibold text-sm focus:ring-0 p-0"
                       />
                       <button
                         onClick={() =>
                           setModalQty((parseInt(modalQty) + 1).toString())
                         }
-                        className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                        className="p-1.5 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
                       >
-                        <Plus className="h-5 w-5" />
+                        <Plus className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
-                        Fraction ({selectedProduct.xunitsel})
-                      </label>
-                      <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1">
-                        <button
-                          onClick={() =>
-                            setModalFractionQty(
-                              Math.max(
-                                0,
-                                parseInt(modalFractionQty) - 1,
-                              ).toString(),
-                            )
-                          }
-                          className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
-                        >
-                          <Minus className="h-5 w-5" />
-                        </button>
-                        <input
-                          type="number"
-                          value={modalFractionQty}
-                          onChange={(e) => setModalFractionQty(e.target.value)}
-                          className="w-full bg-transparent border-none text-center font-semibold text-lg focus:ring-0"
-                        />
-                        <button
-                          onClick={() =>
-                            setModalFractionQty(
-                              (parseInt(modalFractionQty) + 1).toString(),
-                            )
-                          }
-                          className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
-                        >
-                          <Plus className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
-                        FOC ({selectedProduct.xunitsel})
-                      </label>
-                      <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1">
-                        <button
-                          onClick={() =>
-                            setModalFocQty(
-                              Math.max(0, parseInt(modalFocQty) - 1).toString(),
-                            )
-                          }
-                          className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
-                        >
-                          <Minus className="h-5 w-5" />
-                        </button>
-                        <input
-                          type="number"
-                          value={modalFocQty}
-                          onChange={(e) => setModalFocQty(e.target.value)}
-                          className="w-full bg-transparent border-none text-center font-semibold text-lg focus:ring-0"
-                        />
-                        <button
-                          onClick={() =>
-                            setModalFocQty(
-                              (parseInt(modalFocQty) + 1).toString(),
-                            )
-                          }
-                          className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
-                        >
-                          <Plus className="h-5 w-5" />
-                        </button>
-                      </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+                      Fraction ({selectedProduct.xunitsel})
+                    </label>
+                    <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1">
+                      <button
+                        onClick={() =>
+                          setModalFractionQty(
+                            Math.max(
+                              0,
+                              parseInt(modalFractionQty) - 1,
+                            ).toString(),
+                          )
+                        }
+                        className="p-1.5 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+                      <input
+                        type="number"
+                        value={modalFractionQty}
+                        onChange={(e) => setModalFractionQty(e.target.value)}
+                        className="w-full bg-transparent border-none text-center font-semibold text-sm focus:ring-0 p-0"
+                      />
+                      <button
+                        onClick={() =>
+                          setModalFractionQty(
+                            (parseInt(modalFractionQty) + 1).toString(),
+                          )
+                        }
+                        className="p-1.5 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -566,7 +527,6 @@ export function SalesReturnCreatePage() {
                         selectedProduct,
                         parseInt(modalQty) || 0,
                         parseInt(modalFractionQty) || 0,
-                        parseInt(modalFocQty) || 0,
                       ).subtotal.toLocaleString()}
                     </span>
                   </div>
@@ -581,7 +541,6 @@ export function SalesReturnCreatePage() {
                         selectedProduct,
                         parseInt(modalQty) || 0,
                         parseInt(modalFractionQty) || 0,
-                        parseInt(modalFocQty) || 0,
                       ).dutyAmount.toLocaleString()}
                     </span>
                   </div>
@@ -595,7 +554,6 @@ export function SalesReturnCreatePage() {
                         selectedProduct,
                         parseInt(modalQty) || 0,
                         parseInt(modalFractionQty) || 0,
-                        parseInt(modalFocQty) || 0,
                       ).vatAmount.toLocaleString()}
                     </span>
                   </div>
@@ -609,7 +567,6 @@ export function SalesReturnCreatePage() {
                         selectedProduct,
                         parseInt(modalQty) || 0,
                         parseInt(modalFractionQty) || 0,
-                        parseInt(modalFocQty) || 0,
                       ).total.toLocaleString()}
                     </span>
                   </div>
@@ -681,8 +638,7 @@ export function SalesReturnCreatePage() {
                           {item.qty} {item.product.xunitpur}{" "}
                           {item.fractionQty > 0
                             ? `+ ${item.fractionQty} ${item.product.xunitsel}`
-                            : ""}{" "}
-                          {item.focQty > 0 ? `+ ${item.focQty} FOC` : ""}
+                            : ""}
                         </span>
                         <div className="h-1 w-1 rounded-full bg-slate-300" />
                         <span className="text-[10px] font-semibold text-primary">
