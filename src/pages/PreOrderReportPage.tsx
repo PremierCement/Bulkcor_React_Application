@@ -28,7 +28,7 @@ import { useEffect, useMemo, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-export function SalesReportPage() {
+export function PreOrderReportPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { addToast } = useToast();
@@ -47,15 +47,18 @@ export function SalesReportPage() {
     if (!user?.username) return;
     setLoading(true);
     try {
-      const response = await salesService.getSalesReport(user.username, pdate);
+      const response = await salesService.getPreOrderReport(
+        user.username,
+        pdate,
+      );
       if (response.status) {
         setReportData(response.data);
       } else {
         setReportData([]);
       }
     } catch (error) {
-      console.error("Failed to fetch sales report", error);
-      addToast("Failed to fetch sales report", "error");
+      console.error("Failed to fetch pre-order report", error);
+      addToast("Failed to fetch pre-order report", "error");
       setReportData([]);
     } finally {
       setLoading(false);
@@ -105,7 +108,7 @@ export function SalesReportPage() {
     // Report Title
     doc.setFontSize(14);
     doc.setFont("helvetica", "normal");
-    doc.text(`Sales Order Report of: ${pdate}`, pageWidth / 2, 28, {
+    doc.text(`Pre Order Report of: ${pdate}`, pageWidth / 2, 28, {
       align: "center",
     });
 
@@ -127,7 +130,7 @@ export function SalesReportPage() {
 
     autoTable(doc, {
       startY: 65,
-      head: [["Date", "Customer Name", "Chalan No", "Sales Type", "Amount"]],
+      head: [["Date", "Customer Name", "Order No", "Order Type", "Amount"]],
       body: tableData,
       theme: "plain",
       headStyles: {
@@ -145,7 +148,6 @@ export function SalesReportPage() {
         4: { halign: "right" },
       },
       didDrawPage: () => {
-        // Add footer line or page numbers if needed
         doc.setFontSize(8);
         doc.text(
           `Generated on ${new Date().toLocaleString()}`,
@@ -205,7 +207,7 @@ export function SalesReportPage() {
               BULKCOR TRADING LLC
             </h1>
             <p className="text-sm font-medium text-black">
-              Delivery List Report of: {pdate}
+              Pre Order Report of: {pdate}
             </p>
             <div className="text-left mt-6 space-y-1">
               <p className="text-sm font-semibold text-black">
@@ -227,11 +229,13 @@ export function SalesReportPage() {
                 className="flex items-center gap-1 p-1.5 sm:p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors print:hidden text-slate-600 dark:text-slate-400"
               >
                 <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-                <span className="text-xs font-bold hidden xs:inline">Back</span>
+                <span className="text-xs font-semibold hidden xs:inline">
+                  Back
+                </span>
               </button>
               <h1 className="text-base sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2 truncate">
                 <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
-                <span className="truncate">Sales Report</span>
+                <span className="truncate">Pre Order Report</span>
               </h1>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -268,7 +272,7 @@ export function SalesReportPage() {
               </div>
               <input
                 type="text"
-                placeholder="Search by Customer or Invoice"
+                placeholder="Search by Customer or Order No"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary transition-all text-slate-700 dark:text-slate-200"
@@ -286,14 +290,14 @@ export function SalesReportPage() {
             <div className="relative flex flex-col h-full justify-between gap-1">
               <div className="flex items-center justify-between">
                 <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  Cash Sales
+                  Cash Pre-Orders
                 </p>
                 <div className="h-7 w-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
                   <Banknote className="h-3.5 w-3.5" />
                 </div>
               </div>
               <p className="text-lg sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 flex items-baseline gap-1">
-                <span className="text-[10px] font-bold text-slate-400">
+                <span className="text-[10px] font-semibold text-slate-400">
                   AED
                 </span>
                 {totals.cash.toLocaleString(undefined, {
@@ -308,14 +312,14 @@ export function SalesReportPage() {
             <div className="relative flex flex-col h-full justify-between gap-1">
               <div className="flex items-center justify-between">
                 <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  Credit Sales
+                  Credit Pre-Orders
                 </p>
                 <div className="h-7 w-7 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
                   <CreditCard className="h-3.5 w-3.5" />
                 </div>
               </div>
               <p className="text-lg sm:text-2xl font-black text-amber-600 dark:text-amber-400 flex items-baseline gap-1">
-                <span className="text-[10px] font-bold text-slate-400">
+                <span className="text-[10px] font-semibold text-slate-400">
                   AED
                 </span>
                 {totals.credit.toLocaleString(undefined, {
@@ -335,7 +339,7 @@ export function SalesReportPage() {
               </div>
             </div>
             <p className="mt-4 text-sm font-medium text-slate-500 animate-pulse">
-              Fetching sales data...
+              Fetching pre-order data...
             </p>
           </div>
         ) : sortedData.length === 0 ? (
@@ -364,10 +368,10 @@ export function SalesReportPage() {
                       Customer Name
                     </th>
                     <th className="px-6 py-4 text-[10px] font-semibold text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 print:text-black print:text-[10px]">
-                      Chalan No
+                      Order No
                     </th>
                     <th className="px-6 py-4 text-[10px] font-semibold text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 print:text-black print:text-[10px]">
-                      Sales Type
+                      Order Type
                     </th>
                     <th className="px-6 py-4 text-[10px] font-semibold text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 text-right print:text-black print:text-[10px]">
                       Amount
@@ -426,7 +430,7 @@ export function SalesReportPage() {
               </table>
             </div>
 
-            {/* Mobile Tabular View (Combined Columns) */}
+            {/* Mobile Tabular View */}
             <div className="md:hidden bg-white dark:bg-slate-900 rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden print:hidden">
               <div className="divide-y divide-slate-100 dark:divide-slate-800">
                 {sortedData.map((item) => (
@@ -505,7 +509,7 @@ export function SalesReportPage() {
                   </span>
                 </button>
                 <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
-                  Order Details
+                  Pre-Order Details
                 </div>
                 {orderDetails.length > 0 && (
                   <span

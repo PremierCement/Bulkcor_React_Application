@@ -150,10 +150,51 @@ export interface SalesOrderDetailEntry {
   xchgtot: string;
 }
 
+export interface CollectionReportEntry {
+  xtrnnum: string;
+  xorg: string;
+  xprime: string;
+  xstatus: string;
+  xdate: string;
+  xconfirmt: string;
+  xcreatedby: string;
+  xpaymode: string;
+  xbank: string | null;
+  xbankbr: string | null;
+  xcheque: string | null;
+  current_user: string | null;
+  xtaxnum: string | null;
+}
+
+export interface CollectionReportResponse {
+  status: boolean;
+  status_code: number;
+  data: CollectionReportEntry[];
+}
+
 export interface SalesOrderDetailsResponse {
   status: boolean;
   status_code: number;
   data: SalesOrderDetailEntry[];
+}
+
+export interface SalesReturnReportEntry {
+  xtrnnum: string;
+  xcus: string;
+  xwh: string;
+  xorg: string;
+  xdate: string;
+  xretvstat: string;
+  xtypeloc: string;
+  xtotamt: string;
+  xpayamt: string;
+  xreason: string | null;
+}
+
+export interface SalesReturnReportResponse {
+  status: boolean;
+  status_code: number;
+  data: SalesReturnReportEntry[];
 }
 
 export const salesService = {
@@ -193,10 +234,10 @@ export const salesService = {
   },
   getSalesReport: async (
     empCode: string,
-    date: string,
+    pdate: string,
   ): Promise<SalesReportResponse> => {
     const response = await api.get(
-      `/reports/salesreports?emp_code=${empCode}&date=${date}`,
+      `/reports/salesreports?emp_code=${empCode}&pdate=${pdate}`,
     );
     return response.data;
   },
@@ -204,6 +245,33 @@ export const salesService = {
     xchlnum: string,
   ): Promise<SalesOrderDetailsResponse> => {
     const response = await api.get(`/Sales/detail?xchlnum=${xchlnum}`);
+    return response.data;
+  },
+  getCollectionReport: async (
+    empCode: string,
+    pdate: string,
+  ): Promise<CollectionReportResponse> => {
+    const response = await api.get(
+      `/reports/collectionreports?emp_code=${empCode}&pdate=${pdate}`,
+    );
+    return response.data;
+  },
+  getPreOrderReport: async (
+    empCode: string,
+    pdate: string,
+  ): Promise<SalesReportResponse> => {
+    const response = await api.get(
+      `/reports/Presalesreports?emp_code=${empCode}&pdate=${pdate}`,
+    );
+    return response.data;
+  },
+  getSalesReturnReport: async (
+    empCode: string,
+    pdate: string,
+  ): Promise<SalesReturnReportResponse> => {
+    const response = await api.get(
+      `/reports/salesreturnreports?emp_code=${empCode}&pdate=${pdate}`,
+    );
     return response.data;
   },
 };

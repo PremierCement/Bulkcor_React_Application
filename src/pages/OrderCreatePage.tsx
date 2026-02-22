@@ -25,6 +25,7 @@ import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useToast } from "@/store/useToast";
 import { salesService } from "@/services/sales.service";
+import { printPOSInvoice } from "@/utils/printPOSInvoice";
 
 interface CartItem {
   product: Product;
@@ -341,6 +342,25 @@ export function OrderCreatePage() {
       addToast("Failed to place order. Please try again.", "error");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handlePrintPOSInvoice = async (order: any) => {
+    try {
+      setHistoryLoading(true);
+      const response = await salesService.getOrderDetails(order.xchlnum);
+      if (response.status && Array.isArray(response.data)) {
+        // Pass the first item's header info if order doesn't have everything
+        // but salesOrderDetailEntry usually has what we need
+        await printPOSInvoice(order, response.data, customer, user);
+      } else {
+        addToast("Failed to fetch order details for printing", "error");
+      }
+    } catch (error) {
+      console.error("Print failed", error);
+      addToast("Failed to generate invoice", "error");
+    } finally {
+      setHistoryLoading(false);
     }
   };
 
@@ -992,10 +1012,12 @@ export function OrderCreatePage() {
                   {historyOrders.map((order, index) => (
                     <div
                       key={index}
-                      className={`bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700 ${historyTab === "pre" ? "cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" : ""}`}
+                      className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                       onClick={() => {
                         if (historyTab === "pre") {
                           handleLoadPreOrder(order.xchlnum);
+                        } else {
+                          handlePrintPOSInvoice(order);
                         }
                       }}
                     >
