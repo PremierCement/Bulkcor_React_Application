@@ -37,4 +37,9 @@ export const paymentService = {
     const response = await api.post("/payment-entry/", data);
     return response.data;
   },
+
+  getPaymentDetails: async (xtrnnum: string): Promise<any> => {
+    const response = await api.get(`/paymentNumber?xtrnnum=${xtrnnum}`);
+    return response.data;
+  },
 };

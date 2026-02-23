@@ -244,7 +244,7 @@ export function SalesReturnCreatePage() {
       <div className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div className="px-4 py-3 flex items-center gap-2">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/sales-return")}
             className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
           >
             <ChevronLeft className="h-6 w-6" />

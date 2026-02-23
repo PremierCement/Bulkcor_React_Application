@@ -197,6 +197,13 @@ export interface SalesReturnReportResponse {
   data: SalesReturnReportEntry[];
 }
 
+export interface PaymentListResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: CollectionReportEntry[];
+}
+
 export const salesService = {
   confirmOrder: async (data: SaleOrder) => {
     const response = await api.post("/sales/", data);
@@ -271,6 +278,15 @@ export const salesService = {
   ): Promise<SalesReturnReportResponse> => {
     const response = await api.get(
       `/reports/salesreturnreports?emp_code=${empCode}&pdate=${pdate}`,
+    );
+    return response.data;
+  },
+  getPaymentList: async (
+    cusCode: string,
+    date: string,
+  ): Promise<PaymentListResponse> => {
+    const response = await api.get(
+      `/paymentlist?xcus=${cusCode}&xdate=${date}`,
     );
     return response.data;
   },

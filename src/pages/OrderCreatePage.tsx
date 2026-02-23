@@ -102,17 +102,12 @@ export function OrderCreatePage() {
     const fetchHistory = async () => {
       try {
         const today = new Date().toISOString().split("T")[0];
-        let response;
         if (historyTab === "today") {
-          response = await salesService.getOrders(xcus, today);
+          const response = await salesService.getOrders(xcus, today);
+          setHistoryOrders(response.data || []);
         } else {
-          response = await salesService.getPreOrders(xcus, today);
-        }
-
-        if (response.status && Array.isArray(response.data)) {
-          setHistoryOrders(response.data);
-        } else {
-          setHistoryOrders([]);
+          const response = await salesService.getPreOrders(xcus, today);
+          setHistoryOrders(response.data || []);
         }
       } catch (error) {
         console.error("Failed to fetch history", error);
@@ -378,7 +373,7 @@ export function OrderCreatePage() {
       <div className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div className="px-4 py-3 flex items-center gap-2">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/order-placement")}
             className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
           >
             <ChevronLeft className="h-6 w-6" />
@@ -1012,11 +1007,11 @@ export function OrderCreatePage() {
                   {historyOrders.map((order, index) => (
                     <div
                       key={index}
-                      className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      className={`bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700 ${historyTab === "pre" || historyTab === "today" ? "cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" : ""}`}
                       onClick={() => {
                         if (historyTab === "pre") {
                           handleLoadPreOrder(order.xchlnum);
-                        } else {
+                        } else if (historyTab === "today") {
                           handlePrintPOSInvoice(order);
                         }
                       }}

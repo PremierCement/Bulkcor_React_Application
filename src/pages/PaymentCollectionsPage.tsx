@@ -19,7 +19,10 @@ import {
   Banknote,
   Calendar,
   History,
+  Wallet,
 } from "lucide-react";
+import { salesService } from "@/services/sales.service";
+import { printCollectionInvoice } from "@/utils/printCollectionInvoice";
 import { useCustomerFilterStore } from "@/store/useCustomerFilterStore";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { CustomerFilters } from "@/components/customer/CustomerFilters";
@@ -58,7 +61,11 @@ export default function PaymentCollectionsPage() {
     invoices: false,
     banks: false,
     submitting: false,
+    history: false,
   });
+
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyPayments, setHistoryPayments] = useState<any[]>([]);
 
   const [balance, setBalance] = useState<string>("0");
   const [invoices, setInvoices] = useState<PendingInvoice[]>([]);
@@ -68,7 +75,7 @@ export default function PaymentCollectionsPage() {
   const [selectedBank, setSelectedBank] = useState<string>("");
   const [branchName, setBranchName] = useState<string>("");
   const [transactionRef, setTransactionRef] = useState<string>("");
-  const [paymentDate, setPaymentDate] = useState<string>(
+  const [paymentDate] = useState<string>(
     new Date().toISOString().split("T")[0],
   );
   const [note, setNote] = useState<string>("");
@@ -112,6 +119,42 @@ export default function PaymentCollectionsPage() {
       navigate("/collections", { replace: true });
     } finally {
       setLoading((prev) => ({ ...prev, balance: false, invoices: false }));
+    }
+  };
+
+  useEffect(() => {
+    if (!showHistory || !xcus) return;
+
+    const fetchPaymentHistory = async () => {
+      setLoading((prev) => ({ ...prev, history: true }));
+      try {
+        const today = new Date().toISOString().split("T")[0];
+        const response = await salesService.getPaymentList(xcus, today);
+        setHistoryPayments(response.results || []);
+      } catch (error) {
+        console.error("Failed to fetch payment history", error);
+        setHistoryPayments([]);
+      } finally {
+        setLoading((prev) => ({ ...prev, history: false }));
+      }
+    };
+
+    fetchPaymentHistory();
+  }, [xcus, showHistory]);
+
+  const handlePrintReceipt = async (xtrnnum: string) => {
+    try {
+      addToast("Fetching payment details...", "info");
+      const response = await paymentService.getPaymentDetails(xtrnnum);
+      if (response.results && response.results.length > 0) {
+        await printCollectionInvoice(response.results[0]);
+        addToast("Receipt generated successfully", "success");
+      } else {
+        addToast("Payment details not found", "error");
+      }
+    } catch (error) {
+      console.error("Failed to print receipt", error);
+      addToast("Failed to generate receipt", "error");
     }
   };
 
@@ -327,7 +370,7 @@ export default function PaymentCollectionsPage() {
         <div className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
           <div className="px-4 py-3 flex items-center gap-3">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/collections")}
               className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
             >
               <ChevronLeft className="h-6 w-6" />
@@ -356,6 +399,12 @@ export default function PaymentCollectionsPage() {
                 {invoices.length}
               </p>
             </div>
+            <button
+              onClick={() => setShowHistory(true)}
+              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors ml-1"
+            >
+              <History className="h-6 w-6 text-slate-500" />
+            </button>
           </div>
         </div>
 
@@ -660,7 +709,7 @@ export default function PaymentCollectionsPage() {
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => navigate(-1)}
+                onClick={() => navigate("/collections")}
                 className="hidden sm:block px-6 py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs uppercase tracking-widest rounded-xl transition-all"
               >
                 Cancel
@@ -683,6 +732,93 @@ export default function PaymentCollectionsPage() {
             </div>
           </div>
         </div>
+
+        {/* Payment History Overlay */}
+        {showHistory && (
+          <div className="fixed inset-0 z-[60] flex justify-end animate-in fade-in duration-300">
+            <div
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm hidden md:block"
+              onClick={() => setShowHistory(false)}
+            />
+            <div className="relative w-full md:w-[450px] bg-white dark:bg-slate-950 shadow-2xl animate-in slide-in-from-right duration-500 h-full flex flex-col">
+              <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowHistory(false)}
+                    className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </button>
+                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white mt-1">
+                    Payment History
+                  </h2>
+                </div>
+              </div>
+
+              <div className="flex-1 flex flex-col p-4 w-full h-full">
+                {loading.history ? (
+                  <div className="flex flex-1 items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : historyPayments.length > 0 ? (
+                  <div className="flex-1 overflow-y-auto space-y-3">
+                    {historyPayments.map((payment, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handlePrintReceipt(payment.xtrnnum)}
+                        className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer group/card"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase tracking-wider group-hover/card:bg-primary group-hover/card:text-white transition-colors">
+                              {payment.xtrnnum}
+                            </span>
+                            <p className="text-[10px] text-slate-500 mt-1">
+                              {payment.xdate}
+                            </p>
+                          </div>
+                          <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded">
+                            {Number(payment.xprime).toFixed(2)} AED
+                          </span>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs text-slate-700 dark:text-slate-300">
+                            {payment.xpaymode} Payment{" "}
+                            {payment.xbank ? `via ${payment.xbank}` : ""}
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-[9px] font-medium text-slate-400">
+                              Status:
+                            </span>
+                            {/* <span
+                              className={`text-[9px] font-bold uppercase ${payment.xstatus === "Confirmed" ? "text-emerald-500" : "text-amber-500"}`}
+                            >
+                              {payment.xstatus}
+                            </span> */}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4">
+                    <div className="h-20 w-20 bg-slate-50 dark:bg-slate-900 rounded-3xl flex items-center justify-center ring-1 ring-slate-100 dark:ring-slate-800">
+                      <Wallet className="h-10 w-10 text-slate-300" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-semibold text-slate-900 dark:text-white">
+                        No payments found
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[200px]">
+                        There are no payments recorded today for this customer.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -781,6 +917,92 @@ export default function PaymentCollectionsPage() {
           </div>
         )}
       </div>
+
+      {/* Payment History Overlay */}
+      {showHistory && (
+        <div className="fixed inset-0 z-[60] flex justify-end animate-in fade-in duration-300">
+          <div
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm hidden md:block"
+            onClick={() => setShowHistory(false)}
+          />
+          <div className="relative w-full md:w-[450px] bg-white dark:bg-slate-950 shadow-2xl animate-in slide-in-from-right duration-500 h-full flex flex-col">
+            <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowHistory(false)}
+                  className="p-2 -ml-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white mt-1">
+                  Payment History
+                </h2>
+              </div>
+            </div>
+
+            <div className="flex-1 flex flex-col p-4 w-full h-full">
+              {loading.history ? (
+                <div className="flex flex-1 items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : historyPayments.length > 0 ? (
+                <div className="flex-1 overflow-y-auto space-y-3">
+                  {historyPayments.map((payment, index) => (
+                    <div
+                      key={index}
+                      className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase tracking-wider">
+                            {payment.xtrnnum}
+                          </span>
+                          <p className="text-[10px] text-slate-500 mt-1">
+                            {payment.xdate}
+                          </p>
+                        </div>
+                        <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded">
+                          {Number(payment.xprime).toFixed(2)} AED
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs text-slate-700 dark:text-slate-300">
+                          {payment.xpaymode} Payment{" "}
+                          {payment.xbank ? `via ${payment.xbank}` : ""}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-[9px] font-medium text-slate-400">
+                            Status:
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold uppercase ${payment.xstatus === "Confirmed" ? "text-emerald-500" : "text-amber-500"}`}
+                          >
+                            {payment.xstatus}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center text-center space-y-4">
+                  <div className="h-20 w-20 bg-slate-50 dark:bg-slate-900 rounded-3xl flex items-center justify-center ring-1 ring-slate-100 dark:ring-slate-800">
+                    <Wallet className="h-10 w-10 text-slate-300" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-semibold text-slate-900 dark:text-white">
+                      No payments found
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[200px]">
+                      There are no payments recorded today for this customer.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
