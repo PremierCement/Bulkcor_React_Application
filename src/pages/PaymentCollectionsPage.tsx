@@ -750,7 +750,7 @@ export default function PaymentCollectionsPage() {
                     <ChevronLeft className="h-6 w-6" />
                   </button>
                   <h2 className="text-lg font-semibold text-slate-900 dark:text-white mt-1">
-                    Payment History
+                    Payment Collection List
                   </h2>
                 </div>
               </div>

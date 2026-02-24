@@ -8,15 +8,12 @@ import {
   X,
   UserSearch,
   ShoppingCart,
-  Sun,
-  Moon,
   Package,
   CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Logo from "@/assets/bulkcor_t.png";
-import { useThemeStore } from "@/store/useThemeStore";
 
 interface SidebarProps {
   onClose?: () => void;
@@ -36,8 +33,6 @@ const menuItems = [
 ];
 
 export function Sidebar({ onClose, className }: SidebarProps) {
-  const { theme, toggleTheme } = useThemeStore();
-
   return (
     <div
       className={cn(
@@ -101,22 +96,9 @@ export function Sidebar({ onClose, className }: SidebarProps) {
               Bulkcor Trading LLC
             </p>
             <p className="text-[10px] text-muted-foreground dark:text-slate-500">
-              Version 1.0.0
+              Version 1.3.5 (Stable)
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-full border border-slate-200 dark:border-slate-700 transition-colors hover:bg-white dark:hover:bg-slate-800"
-            onClick={toggleTheme}
-            title={theme === "light" ? "Dark Mode" : "Light Mode"}
-          >
-            {theme === "light" ? (
-              <Moon className="h-4 w-4 text-slate-600" />
-            ) : (
-              <Sun className="h-4 w-4 text-amber-400" />
-            )}
-          </Button>
         </div>
       </div>
     </div>

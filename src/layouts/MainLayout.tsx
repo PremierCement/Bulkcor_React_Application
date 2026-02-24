@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Outlet } from "react-router";
+import { useState, useRef, useEffect } from "react";
+import { Outlet, useLocation } from "react-router";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { BottomNav } from "@/components/layout/BottomNav";
@@ -13,6 +13,14 @@ export function MainLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const scrollRef = useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
+
+  // Automatically scroll to top when route changes
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+    }
+  }, [pathname]);
 
   const handleScroll = (e: React.UIEvent<HTMLElement>) => {
     const scrollTop = e.currentTarget.scrollTop;

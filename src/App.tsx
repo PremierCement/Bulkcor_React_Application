@@ -20,6 +20,9 @@ import { SalesReportPage } from "@/pages/SalesReportPage";
 import { CollectionReportPage } from "@/pages/CollectionReportPage";
 import { PreOrderReportPage } from "@/pages/PreOrderReportPage";
 import { SalesReturnReportPage } from "@/pages/SalesReturnReportPage";
+import { SettingsPage } from "@/pages/SettingsPage";
+import { DeviceInfoPage } from "@/pages/DeviceInfoPage";
+import { AboutPage } from "@/pages/AboutPage";
 
 const router = createBrowserRouter([
   {
@@ -111,7 +114,15 @@ const router = createBrowserRouter([
           },
           {
             path: "settings",
-            element: <NotFoundPage />,
+            element: <SettingsPage />,
+          },
+          {
+            path: "settings/device-info",
+            element: <DeviceInfoPage />,
+          },
+          {
+            path: "settings/about",
+            element: <AboutPage />,
           },
           {
             path: "*",
