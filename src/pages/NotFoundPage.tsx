@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
-import { Hammer, ArrowLeft, Home, LoaderPinwheel } from "lucide-react";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { ArrowLeft, Home, LoaderPinwheel } from "lucide-react";
 
 export function NotFoundPage() {
   const navigate = useNavigate();

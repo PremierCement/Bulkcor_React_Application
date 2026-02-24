@@ -1,17 +1,17 @@
 import { NavLink } from "react-router";
 import {
   LayoutDashboard,
-  Trophy,
   FileChartColumn,
-  BookOpenText,
+  CreditCard,
+  ShoppingCart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
-  { icon: Trophy, label: "Achievement", href: "/achievement" },
   { icon: FileChartColumn, label: "Reports", href: "/reports" },
-  { icon: BookOpenText, label: "Knowledge", href: "/knowledge" },
+  { icon: ShoppingCart, label: "Sales", href: "/order-placement" },
+  { icon: CreditCard, label: "Collections", href: "/collections" },
 ];
 
 export function BottomNav() {
