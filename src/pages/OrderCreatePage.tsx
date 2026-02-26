@@ -38,6 +38,7 @@ interface CartItem {
   vatAmount: number;
   taxAmount: number;
   total: number;
+  price?: number;
 }
 
 export function OrderCreatePage() {
@@ -64,6 +65,7 @@ export function OrderCreatePage() {
   const [modalQty, setModalQty] = useState<string>("1");
   const [modalFractionQty, setModalFractionQty] = useState<string>("0");
   const [modalFocQty, setModalFocQty] = useState<string>("0");
+  const [modalPrice, setModalPrice] = useState<string>("0");
 
   const [saleType, setSaleType] = useState<string>("Cash");
   const [remarks, setRemarks] = useState<string>("");
@@ -149,9 +151,13 @@ export function OrderCreatePage() {
     qty: number,
     fractionQty: number,
     focQty: number,
+    customPrice?: number,
   ): CartItem => {
     const cf = parseFloat(product.xcfsel) || 1;
-    const price = parseFloat(product.xstdprice) || 0;
+    const price =
+      customPrice !== undefined
+        ? customPrice
+        : parseFloat(product.xstdprice) || 0;
     const duty = parseFloat(product.xdutychg) || 0;
     const vat = parseFloat(product.xvatchg) || 0;
 
@@ -175,6 +181,7 @@ export function OrderCreatePage() {
       vatAmount,
       taxAmount,
       total,
+      price,
     };
   };
 
@@ -184,13 +191,14 @@ export function OrderCreatePage() {
     const qty = parseInt(modalQty) || 0;
     const fraction = parseInt(modalFractionQty) || 0;
     const foc = parseInt(modalFocQty) || 0;
+    const price = parseFloat(modalPrice) || 0;
 
     if (qty === 0 && fraction === 0 && foc === 0) {
       const newCart = { ...cart };
       delete newCart[selectedProduct.xitem];
       setCart(newCart);
     } else {
-      const item = calculateItem(selectedProduct, qty, fraction, foc);
+      const item = calculateItem(selectedProduct, qty, fraction, foc, price);
       setCart({ ...cart, [selectedProduct.xitem]: item });
     }
 
@@ -198,6 +206,7 @@ export function OrderCreatePage() {
     setModalQty("1");
     setModalFractionQty("0");
     setModalFocQty("0");
+    setModalPrice("0");
   };
 
   const openEditModal = (product: Product) => {
@@ -207,10 +216,16 @@ export function OrderCreatePage() {
       setModalQty(existing.qty.toString());
       setModalFractionQty(existing.fractionQty.toString());
       setModalFocQty(existing.focQty.toString());
+      setModalPrice(
+        existing.price !== undefined
+          ? existing.price.toString()
+          : parseFloat(product.xstdprice).toString(),
+      );
     } else {
       setModalQty("1");
       setModalFractionQty("0");
       setModalFocQty("0");
+      setModalPrice(parseFloat(product.xstdprice).toString());
     }
   };
 
@@ -251,6 +266,7 @@ export function OrderCreatePage() {
               vatAmount: vatAmount,
               taxAmount: 0, // Not explicitly in response, maybe 0
               total: total,
+              price: parseFloat(item.xrate) || parseFloat(product.xstdprice),
             };
           }
         });
@@ -300,7 +316,12 @@ export function OrderCreatePage() {
           xqtychl: item.totalPcs - item.focQty,
           xqty: item.qty,
           xqtycrn: 0,
-          xrate: Number(parseFloat(item.product.xstdprice).toFixed(2)),
+          xrate: Number(
+            (item.price !== undefined
+              ? item.price
+              : parseFloat(item.product.xstdprice)
+            ).toFixed(2),
+          ),
           xdtwotax: Number(item.subtotal.toFixed(6)),
           xdttax: Number(item.vatAmount.toFixed(2)),
           xchgtot: Number(item.dutyAmount.toFixed(2)),
@@ -345,8 +366,6 @@ export function OrderCreatePage() {
       setHistoryLoading(true);
       const response = await salesService.getOrderDetails(order.xchlnum);
       if (response.status && Array.isArray(response.data)) {
-        // Pass the first item's header info if order doesn't have everything
-        // but salesOrderDetailEntry usually has what we need
         await printPOSInvoice(order, response.data, customer, user);
       } else {
         addToast("Failed to fetch order details for printing", "error");
@@ -584,35 +603,70 @@ export function OrderCreatePage() {
 
               <div className="space-y-6">
                 <div className="grid grid-cols-1 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
-                      Quantity ({selectedProduct.xunitpur})
-                    </label>
-                    <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1">
-                      <button
-                        onClick={() =>
-                          setModalQty(
-                            Math.max(0, parseInt(modalQty) - 1).toString(),
-                          )
-                        }
-                        className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
-                      >
-                        <Minus className="h-5 w-5" />
-                      </button>
-                      <input
-                        type="number"
-                        value={modalQty}
-                        onChange={(e) => setModalQty(e.target.value)}
-                        className="w-full bg-transparent border-none text-center font-semibold text-lg focus:ring-0"
-                      />
-                      <button
-                        onClick={() =>
-                          setModalQty((parseInt(modalQty) + 1).toString())
-                        }
-                        className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
-                      >
-                        <Plus className="h-5 w-5" />
-                      </button>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+                        Quantity ({selectedProduct.xunitpur})
+                      </label>
+                      <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1">
+                        <button
+                          onClick={() =>
+                            setModalQty(
+                              Math.max(0, parseInt(modalQty) - 1).toString(),
+                            )
+                          }
+                          className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                        >
+                          <Minus className="h-5 w-5" />
+                        </button>
+                        <input
+                          type="number"
+                          value={modalQty}
+                          onChange={(e) => setModalQty(e.target.value)}
+                          className="w-full bg-transparent border-none text-center font-semibold text-lg focus:ring-0"
+                        />
+                        <button
+                          onClick={() =>
+                            setModalQty((parseInt(modalQty) + 1).toString())
+                          }
+                          className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                        >
+                          <Plus className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+                        Price per PCS (AED)
+                      </label>
+                      <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1">
+                        <button
+                          onClick={() => {
+                            const current = parseFloat(modalPrice) || 0;
+                            setModalPrice(Math.max(0, current - 1).toFixed(2));
+                          }}
+                          className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                        >
+                          <Minus className="h-5 w-5" />
+                        </button>
+                        <input
+                          type="number"
+                          value={modalPrice}
+                          onChange={(e) => setModalPrice(e.target.value)}
+                          className="w-full bg-transparent border-none text-center font-semibold text-lg focus:ring-0"
+                          step="0.01"
+                        />
+                        <button
+                          onClick={() => {
+                            const current = parseFloat(modalPrice) || 0;
+                            setModalPrice((current + 1).toFixed(2));
+                          }}
+                          className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                        >
+                          <Plus className="h-5 w-5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -700,6 +754,7 @@ export function OrderCreatePage() {
                         parseInt(modalQty) || 0,
                         parseInt(modalFractionQty) || 0,
                         parseInt(modalFocQty) || 0,
+                        parseFloat(modalPrice) || 0,
                       ).subtotal.toLocaleString()}
                     </span>
                   </div>
@@ -715,6 +770,7 @@ export function OrderCreatePage() {
                         parseInt(modalQty) || 0,
                         parseInt(modalFractionQty) || 0,
                         parseInt(modalFocQty) || 0,
+                        parseFloat(modalPrice) || 0,
                       ).dutyAmount.toLocaleString()}
                     </span>
                   </div>
@@ -729,6 +785,7 @@ export function OrderCreatePage() {
                         parseInt(modalQty) || 0,
                         parseInt(modalFractionQty) || 0,
                         parseInt(modalFocQty) || 0,
+                        parseFloat(modalPrice) || 0,
                       ).vatAmount.toLocaleString()}
                     </span>
                   </div>
@@ -743,6 +800,7 @@ export function OrderCreatePage() {
                         parseInt(modalQty) || 0,
                         parseInt(modalFractionQty) || 0,
                         parseInt(modalFocQty) || 0,
+                        parseFloat(modalPrice) || 0,
                       ).total.toLocaleString()}
                     </span>
                   </div>
