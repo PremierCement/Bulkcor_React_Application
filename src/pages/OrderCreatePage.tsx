@@ -588,7 +588,7 @@ export function OrderCreatePage() {
                   <p className="text-xs text-slate-500 font-medium mt-1">
                     {selectedProduct.xunitpur} (
                     {parseFloat(selectedProduct.xcfsel).toFixed(1)}{" "}
-                    {selectedProduct.xunitsel}/{selectedProduct.xunitpur}) • AED{" "}
+                    {selectedProduct.xunitsel}/{selectedProduct.xunitpur}) • Original Price AED{" "}
                     {parseFloat(selectedProduct.xstdprice).toLocaleString()} per{" "}
                     {selectedProduct.xunitsel}
                   </p>
