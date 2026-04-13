@@ -27,6 +27,8 @@ import { Clock, User, Hash, ShoppingBag, Info } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { customerService } from "@/services/customer.service";
+import { printPOSInvoice } from "@/utils/printPOSInvoice";
 
 export function SalesReportPage() {
   const navigate = useNavigate();
@@ -42,6 +44,7 @@ export function SalesReportPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
   const [orderDetails, setOrderDetails] = useState<SalesOrderDetailEntry[]>([]);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [isPrintingInvoice, setIsPrintingInvoice] = useState<string | null>(null);
 
   const fetchReport = async () => {
     if (!user?.username) return;
@@ -79,6 +82,34 @@ export function SalesReportPage() {
       addToast("Failed to fetch order details", "error");
     } finally {
       setDetailsLoading(false);
+    }
+  };
+
+  const handlePrintInvoice = async (item: SalesReportEntry, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    setIsPrintingInvoice(item.xchlnum);
+    try {
+      const detailsResponse = await salesService.getOrderDetails(item.xchlnum);
+      if (detailsResponse.status && Array.isArray(detailsResponse.data)) {
+        let customerData = null;
+        if (item.xcus) {
+          try {
+            customerData = await customerService.getCustomerById(item.xcus);
+          } catch (e) {
+            console.error("Failed to fetch customer for print", e);
+          }
+        }
+        await printPOSInvoice(item, detailsResponse.data, customerData, user);
+      } else {
+        addToast("Failed to fetch order details for printing", "error");
+      }
+    } catch (error) {
+      console.error("Print POS Invoice failed", error);
+      addToast("Failed to generate POS invoice", "error");
+    } finally {
+      setIsPrintingInvoice(null);
     }
   };
 
@@ -416,9 +447,23 @@ export function SalesReportPage() {
                         </p>
                       </td>
                       <td className="px-6 py-4 text-right print:hidden">
-                        <button className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl group-hover:bg-primary group-hover:text-white transition-all">
-                          <ChevronRight className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={(e) => handlePrintInvoice(item, e)}
+                            disabled={isPrintingInvoice === item.xchlnum}
+                            className="p-2 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-50"
+                            title="Print TAX INVOICE"
+                          >
+                            {isPrintingInvoice === item.xchlnum ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Printer className="h-4 w-4" />
+                            )}
+                          </button>
+                          <button className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl group-hover:bg-primary group-hover:text-white transition-all">
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -471,7 +516,18 @@ export function SalesReportPage() {
                       <p className="text-[10px] font-semibold text-emerald-500">
                         Paid: {parseFloat(item.xpayamt).toLocaleString()}
                       </p>
-                      <div className="mt-1 flex justify-end">
+                      <div className="mt-1 flex justify-end items-center gap-2">
+                        <button
+                          onClick={(e) => handlePrintInvoice(item, e)}
+                          disabled={isPrintingInvoice === item.xchlnum}
+                          className="p-1.5 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-50"
+                        >
+                          {isPrintingInvoice === item.xchlnum ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <Printer className="h-3.5 w-3.5" />
+                          )}
+                        </button>
                         <ChevronRight className="h-4 w-4 text-slate-300" />
                       </div>
                     </div>
@@ -504,9 +560,29 @@ export function SalesReportPage() {
                     Back
                   </span>
                 </button>
-                <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest hidden sm:block">
                   Order Details
                 </div>
+                {(() => {
+                  const selectedOrderItem = sortedData.find(
+                    (item) => item.xchlnum === selectedInvoice,
+                  );
+                  return selectedOrderItem ? (
+                    <button
+                      onClick={() => handlePrintInvoice(selectedOrderItem)}
+                      disabled={isPrintingInvoice === selectedOrderItem.xchlnum}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white rounded-[10px] text-[10px] sm:text-xs font-bold hover:bg-emerald-600 transition-colors shadow-[0_0_15px_-3px_rgba(16,185,129,0.3)] disabled:opacity-50"
+                    >
+                      {isPrintingInvoice === selectedOrderItem.xchlnum ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Printer className="h-3.5 w-3.5" />
+                      )}
+                      <span className="hidden sm:inline">PRINT TAX INVOICE</span>
+                      <span className="sm:hidden">TAX INVOICE</span>
+                    </button>
+                  ) : null;
+                })()}
                 {orderDetails.length > 0 && (
                   <span
                     className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase ${
