@@ -33,6 +33,8 @@ const menuItems = [
 ];
 
 export function Sidebar({ onClose, className }: SidebarProps) {
+  const appVersion = import.meta.env.VITE_APP_VERSION || "1.0.0";
+
   return (
     <div
       className={cn(
@@ -96,7 +98,7 @@ export function Sidebar({ onClose, className }: SidebarProps) {
               Bulkcor Trading LLC
             </p>
             <p className="text-[10px] text-muted-foreground dark:text-slate-500">
-              Version 1.3.5 (Stable)
+              Version {appVersion} (Stable)
             </p>
           </div>
         </div>

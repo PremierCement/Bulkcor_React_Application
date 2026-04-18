@@ -44,7 +44,9 @@ export function SalesReportPage() {
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
   const [orderDetails, setOrderDetails] = useState<SalesOrderDetailEntry[]>([]);
   const [detailsLoading, setDetailsLoading] = useState(false);
-  const [isPrintingInvoice, setIsPrintingInvoice] = useState<string | null>(null);
+  const [isPrintingInvoice, setIsPrintingInvoice] = useState<string | null>(
+    null,
+  );
 
   const fetchReport = async () => {
     if (!user?.username) return;
@@ -85,7 +87,10 @@ export function SalesReportPage() {
     }
   };
 
-  const handlePrintInvoice = async (item: SalesReportEntry, e?: React.MouseEvent) => {
+  const handlePrintInvoice = async (
+    item: SalesReportEntry,
+    e?: React.MouseEvent,
+  ) => {
     if (e) {
       e.stopPropagation();
     }
@@ -452,7 +457,7 @@ export function SalesReportPage() {
                             onClick={(e) => handlePrintInvoice(item, e)}
                             disabled={isPrintingInvoice === item.xchlnum}
                             className="p-2 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-50"
-                            title="Print TAX INVOICE"
+                            title="Print"
                           >
                             {isPrintingInvoice === item.xchlnum ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -578,7 +583,7 @@ export function SalesReportPage() {
                       ) : (
                         <Printer className="h-3.5 w-3.5" />
                       )}
-                      <span className="hidden sm:inline">PRINT TAX INVOICE</span>
+                      <span className="hidden sm:inline">PRINT</span>
                       <span className="sm:hidden">TAX INVOICE</span>
                     </button>
                   ) : null;

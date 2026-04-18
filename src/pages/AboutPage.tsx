@@ -7,8 +7,8 @@ export function AboutPage() {
 
   const appInfo = {
     name: "Bulkcor Trading LLC",
-    version: "1.3.5 (Stable)",
-    releaseDate: "February 24, 2026",
+    version: import.meta.env.VITE_APP_VERSION || "1.3.5",
+    releaseDate: import.meta.env.VITE_APP_RELEASE_DATE || "April 13, 2026",
     description:
       "A comprehensive solution for sales, inventory, and payment collection tracking. Designed to streamline operations and enhance field productivity.",
     copyright: "© 2026 Bulkcor Trading LLC. All rights reserved.",

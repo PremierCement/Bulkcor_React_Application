@@ -95,7 +95,7 @@ export async function printPOSInvoice(
   doc.text(`Date: ${order.xdate}`, width - 5, y, { align: "right" });
   y += 4;
 
-  doc.text(`Customer : ${customer?.xorg || order.zorg || "N/A"}`, 5, y);
+  doc.text(`Customer : ${customer?.xorg || order.xorg || order.zorg || "N/A"}`, 5, y);
   y += 4;
   doc.text(`Address : ${customer?.xadd1 || ""}`, 5, y);
   y += 4;
@@ -111,7 +111,7 @@ export async function printPOSInvoice(
   // 5. Table
   const tableBody = details.map((item) => [
     item.xdesc,
-    parseFloat(item.xqtychl || "0").toFixed(0),
+    parseFloat(item.xqty || item.xqtychl || "0").toFixed(0),
     parseFloat(item.xrate).toFixed(2),
     parseFloat(item.xdttax || "0").toFixed(2),
     parseFloat(item.xdtwotax || "0").toFixed(2),
@@ -171,7 +171,13 @@ export async function printPOSInvoice(
     (acc, item) => acc + parseFloat(item.xchgtot || "0"),
     0,
   );
-  const grandTotal = subTotal + totalVAT + totalExcise;
+  const printedSubTotal = parseFloat(subTotal.toFixed(2));
+  const printedVAT = parseFloat(totalVAT.toFixed(2));
+  const printedExcise = parseFloat(totalExcise.toFixed(2));
+  const exactGrandTotal = parseFloat(
+    (printedSubTotal + printedVAT + printedExcise).toFixed(2),
+  );
+  const roundedBillAmount = (Math.round(exactGrandTotal * 4) / 4).toFixed(2);
 
   doc.text(`${subTotal.toFixed(2)}`, summaryX, y, { align: "right" });
   y += 4;
@@ -193,7 +199,7 @@ export async function printPOSInvoice(
 
   doc.setFont("helvetica", "bold");
   doc.text(`Round Bill Amount:`, summaryX - 20, y, { align: "right" });
-  doc.text(`AED ${Math.ceil(grandTotal)}`, summaryX, y, {
+  doc.text(`AED ${roundedBillAmount}`, summaryX, y, {
     align: "right",
   });
   y += 6;
