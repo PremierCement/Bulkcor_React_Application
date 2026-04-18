@@ -31,6 +31,7 @@ interface CartItem {
   vatAmount: number;
   taxAmount: number;
   total: number;
+  price?: number;
 }
 
 export function SalesReturnCreatePage() {
@@ -51,6 +52,7 @@ export function SalesReturnCreatePage() {
   // Qty input state for modal
   const [modalQty, setModalQty] = useState<string>("1");
   const [modalFractionQty, setModalFractionQty] = useState<string>("0");
+  const [modalPrice, setModalPrice] = useState<string>("0");
 
   const [remarks, setRemarks] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -103,9 +105,13 @@ export function SalesReturnCreatePage() {
     product: Product,
     qty: number,
     fractionQty: number,
+    customPrice?: number,
   ): CartItem => {
     const cf = parseFloat(product.xcfsel) || 1;
-    const price = parseFloat(product.xstdprice) || 0;
+    const price =
+      customPrice !== undefined
+        ? customPrice
+        : parseFloat(product.xstdprice) || 0;
     const duty = parseFloat(product.xdutychg) || 0;
     const vat = parseFloat(product.xvatchg) || 0;
 
@@ -128,6 +134,7 @@ export function SalesReturnCreatePage() {
       vatAmount,
       taxAmount,
       total,
+      price,
     };
   };
 
@@ -136,19 +143,21 @@ export function SalesReturnCreatePage() {
 
     const qty = parseInt(modalQty) || 0;
     const fraction = parseInt(modalFractionQty) || 0;
+    const price = parseFloat(modalPrice) || 0;
 
     if (qty === 0 && fraction === 0) {
       const newCart = { ...cart };
       delete newCart[selectedProduct.xitem];
       setCart(newCart);
     } else {
-      const item = calculateItem(selectedProduct, qty, fraction);
+      const item = calculateItem(selectedProduct, qty, fraction, price);
       setCart({ ...cart, [selectedProduct.xitem]: item });
     }
 
     setSelectedProduct(null);
     setModalQty("1");
     setModalFractionQty("0");
+    setModalPrice("0");
   };
 
   const openEditModal = (product: Product) => {
@@ -157,9 +166,15 @@ export function SalesReturnCreatePage() {
     if (existing) {
       setModalQty(existing.qty.toString());
       setModalFractionQty(existing.fractionQty.toString());
+      setModalPrice(
+        existing.price !== undefined
+          ? existing.price.toString()
+          : parseFloat(product.xstdprice).toString(),
+      );
     } else {
       setModalQty("1");
       setModalFractionQty("0");
+      setModalPrice(parseFloat(product.xstdprice).toString());
     }
   };
 
@@ -195,7 +210,12 @@ export function SalesReturnCreatePage() {
           xline: index + 1,
           xqtychl: item.totalPcs,
           xqty: item.qty,
-          xrate: Number(parseFloat(item.product.xstdprice).toFixed(2)),
+          xrate: Number(
+            (item.price !== undefined
+              ? item.price
+              : parseFloat(item.product.xstdprice)
+            ).toFixed(2),
+          ),
           xdtwotax: item.subtotal.toFixed(2),
           xdttax: item.vatAmount.toFixed(2),
           xchgtot: item.dutyAmount.toFixed(2),
@@ -433,7 +453,8 @@ export function SalesReturnCreatePage() {
                   <p className="text-xs text-slate-500 font-medium mt-1">
                     {selectedProduct.xunitpur} (
                     {parseFloat(selectedProduct.xcfsel).toFixed(1)}{" "}
-                    {selectedProduct.xunitsel}/{selectedProduct.xunitpur}) • AED{" "}
+                    {selectedProduct.xunitsel}/{selectedProduct.xunitpur}) •
+                    Original Price AED{" "}
                     {parseFloat(selectedProduct.xstdprice).toLocaleString()} per{" "}
                     {selectedProduct.xunitsel}
                   </p>
@@ -447,73 +468,114 @@ export function SalesReturnCreatePage() {
               </div>
 
               <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
-                      Qty ({selectedProduct.xunitpur})
-                    </label>
-                    <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1">
-                      <button
-                        onClick={() =>
-                          setModalQty(
-                            Math.max(0, parseInt(modalQty) - 1).toString(),
-                          )
-                        }
-                        className="p-1.5 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </button>
-                      <input
-                        type="number"
-                        value={modalQty}
-                        onChange={(e) => setModalQty(e.target.value)}
-                        className="w-full bg-transparent border-none text-center font-semibold text-sm focus:ring-0 p-0"
-                      />
-                      <button
-                        onClick={() =>
-                          setModalQty((parseInt(modalQty) + 1).toString())
-                        }
-                        className="p-1.5 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </button>
+                <div className="grid grid-cols-1 gap-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+                        Qty ({selectedProduct.xunitpur})
+                      </label>
+                      <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1">
+                        <button
+                          onClick={() =>
+                            setModalQty(
+                              Math.max(0, parseInt(modalQty) - 1).toString(),
+                            )
+                          }
+                          className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                        >
+                          <Minus className="h-5 w-5" />
+                        </button>
+                        <input
+                          type="number"
+                          value={modalQty}
+                          onChange={(e) => setModalQty(e.target.value)}
+                          className="w-full bg-transparent border-none text-center font-semibold text-lg focus:ring-0"
+                        />
+                        <button
+                          onClick={() =>
+                            setModalQty((parseInt(modalQty) + 1).toString())
+                          }
+                          className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                        >
+                          <Plus className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+                        Price per PCS (AED)
+                      </label>
+                      <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1">
+                        <button
+                          onClick={() => {
+                            const current = parseFloat(modalPrice) || 0;
+                            setModalPrice(Math.max(0, current - 1).toFixed(2));
+                          }}
+                          className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                        >
+                          <Minus className="h-5 w-5" />
+                        </button>
+                        <input
+                          type="number"
+                          value={modalPrice}
+                          onChange={(e) => setModalPrice(e.target.value)}
+                          className="w-full bg-transparent border-none text-center font-semibold text-lg focus:ring-0"
+                          step="0.01"
+                        />
+                        <button
+                          onClick={() => {
+                            const current = parseFloat(modalPrice) || 0;
+                            setModalPrice((current + 1).toFixed(2));
+                          }}
+                          className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                        >
+                          <Plus className="h-5 w-5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
-                      Fraction ({selectedProduct.xunitsel})
-                    </label>
-                    <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1">
-                      <button
-                        onClick={() =>
-                          setModalFractionQty(
-                            Math.max(
-                              0,
-                              parseInt(modalFractionQty) - 1,
-                            ).toString(),
-                          )
-                        }
-                        className="p-1.5 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </button>
-                      <input
-                        type="number"
-                        value={modalFractionQty}
-                        onChange={(e) => setModalFractionQty(e.target.value)}
-                        className="w-full bg-transparent border-none text-center font-semibold text-sm focus:ring-0 p-0"
-                      />
-                      <button
-                        onClick={() =>
-                          setModalFractionQty(
-                            (parseInt(modalFractionQty) + 1).toString(),
-                          )
-                        }
-                        className="p-1.5 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </button>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+                        Fraction ({selectedProduct.xunitsel})
+                      </label>
+                      <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1">
+                        <button
+                          onClick={() =>
+                            setModalFractionQty(
+                              Math.max(
+                                0,
+                                parseInt(modalFractionQty) - 1,
+                              ).toString(),
+                            )
+                          }
+                          className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                        >
+                          <Minus className="h-5 w-5" />
+                        </button>
+                        <input
+                          type="number"
+                          value={modalFractionQty}
+                          onChange={(e) => setModalFractionQty(e.target.value)}
+                          className="w-full bg-transparent border-none text-center font-semibold text-lg focus:ring-0"
+                        />
+                        <button
+                          onClick={() =>
+                            setModalFractionQty(
+                              (parseInt(modalFractionQty) + 1).toString(),
+                            )
+                          }
+                          className="p-3 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all"
+                        >
+                          <Plus className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-0 flex items-center justify-center opacity-0 pointer-events-none">
+                      {/* Placeholder for balance */}
                     </div>
                   </div>
                 </div>
@@ -527,6 +589,7 @@ export function SalesReturnCreatePage() {
                         selectedProduct,
                         parseInt(modalQty) || 0,
                         parseInt(modalFractionQty) || 0,
+                        parseFloat(modalPrice) || 0,
                       ).subtotal.toLocaleString()}
                     </span>
                   </div>
@@ -541,6 +604,7 @@ export function SalesReturnCreatePage() {
                         selectedProduct,
                         parseInt(modalQty) || 0,
                         parseInt(modalFractionQty) || 0,
+                        parseFloat(modalPrice) || 0,
                       ).dutyAmount.toLocaleString()}
                     </span>
                   </div>
@@ -554,6 +618,7 @@ export function SalesReturnCreatePage() {
                         selectedProduct,
                         parseInt(modalQty) || 0,
                         parseInt(modalFractionQty) || 0,
+                        parseFloat(modalPrice) || 0,
                       ).vatAmount.toLocaleString()}
                     </span>
                   </div>
@@ -567,6 +632,7 @@ export function SalesReturnCreatePage() {
                         selectedProduct,
                         parseInt(modalQty) || 0,
                         parseInt(modalFractionQty) || 0,
+                        parseFloat(modalPrice) || 0,
                       ).total.toLocaleString()}
                     </span>
                   </div>
