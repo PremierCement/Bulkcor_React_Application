@@ -36,7 +36,7 @@ export function CollectionReportPage() {
     setLoading(true);
     try {
       const response = await salesService.getCollectionReport(
-        user.username,
+        "",
         pdate,
       );
       if (response.success) {

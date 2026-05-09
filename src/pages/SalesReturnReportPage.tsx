@@ -35,7 +35,7 @@ export function SalesReturnReportPage() {
     setLoading(true);
     try {
       const response = await salesService.getSalesReturnReport(
-        user.username,
+        "",
         pdate,
       );
       if (response.success) {

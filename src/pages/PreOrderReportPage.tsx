@@ -48,7 +48,7 @@ export function PreOrderReportPage() {
     setLoading(true);
     try {
       const response = await salesService.getPreOrderReport(
-        user.username,
+        "",
         pdate,
       );
       if (response.success) {

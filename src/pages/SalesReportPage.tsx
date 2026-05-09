@@ -52,7 +52,7 @@ export function SalesReportPage() {
     if (!user?.username) return;
     setLoading(true);
     try {
-      const response = await salesService.getSalesReport(user.username, pdate);
+      const response = await salesService.getSalesReport("", pdate);
       if (response.success) {
         setReportData(response.data);
       } else {

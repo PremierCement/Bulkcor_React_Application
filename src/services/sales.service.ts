@@ -230,7 +230,8 @@ export const salesService = {
     return response.data;
   },
   getSalesReport: async (cusCode: string, date: string): Promise<SalesReportResponse> => {
-    const response = await api.get(`/sales?xcus=${cusCode}&xdate=${date}`);
+    const url = `/sales?xdate=${date}${cusCode ? `&xcus=${cusCode}` : ""}`;
+    const response = await api.get<SalesReportResponse>(url);
     return response.data;
   },
   getOrderDetails: async (xchlnum: string): Promise<SaleDetailResponse> => {
@@ -238,15 +239,18 @@ export const salesService = {
     return response.data;
   },
   getCollectionReport: async (cusCode: string, date: string): Promise<CollectionReportResponse> => {
-    const response = await api.get(`/payment/report?xdate=${date}`);
+    const url = `/payment/report?xdate=${date}${cusCode ? `&xcus=${cusCode}` : ""}`;
+    const response = await api.get<CollectionReportResponse>(url);
     return response.data;
   },
   getPreOrderReport: async (cusCode: string, date: string): Promise<PreOrderResponse> => {
-    const response = await api.get(`/sales/preorder?xcus=${cusCode}&xdate=${date}`);
+    const url = `/sales/preorder?xdate=${date}${cusCode ? `&xcus=${cusCode}` : ""}`;
+    const response = await api.get<PreOrderResponse>(url);
     return response.data;
   },
-  getSalesReturnReport: async (empCode: string, pdate: string): Promise<SalesReturnReportResponse> => {
-    const response = await api.get(`/reports/salesreturnreports?emp_code=${empCode}&pdate=${pdate}`);
+  getSalesReturnReport: async (cusCode: string, date: string): Promise<SalesReturnReportResponse> => {
+    const url = `/sales/return?xdate=${date}${cusCode ? `&xcus=${cusCode}` : ""}`;
+    const response = await api.get<SalesReturnReportResponse>(url);
     return response.data;
   },
   getPaymentList: async (cusCode: string, date: string): Promise<PaymentListResponse> => {
