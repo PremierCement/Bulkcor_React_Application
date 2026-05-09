@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "@/store/useAuthStore";
-import { authService } from "@/services/auth.service";
+import { authService, buildUser } from "@/services/auth.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,11 +23,12 @@ export function LoginPage() {
 
     try {
       const response = await authService.login(username, password);
-      if (response.status === "success") {
-        setAuth(response.token, response.data);
+      if (response.success) {
+        const { accessToken, refreshToken, user } = response.data;
+        setAuth(accessToken, refreshToken, buildUser(user));
         navigate("/");
       } else {
-        setError("Invalid username or password");
+        setError(response.message || "Invalid username or password");
       }
     } catch (err: any) {
       setError(err.response?.data?.message || "An error occurred during login");
