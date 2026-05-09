@@ -1,3 +1,5 @@
+import type { ApiEnvelope } from "./api";
+
 export interface ServerUser {
   zemail: string;
   zid: number;
@@ -25,15 +27,6 @@ export interface User extends ServerUser {
   username: string;
   first_name: string;
   user_type: string;
-}
-
-export interface ApiEnvelope<T> {
-  success: boolean;
-  statusCode: number;
-  message: string;
-  data: T;
-  path: string;
-  timestamp: string;
 }
 
 export interface LoginData {

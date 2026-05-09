@@ -99,7 +99,7 @@ export default function PaymentCollectionsPage() {
     try {
       const [customer, balanceData, invoicesData] = await Promise.all([
         customerService.getCustomerById(cusId),
-        paymentService.getCustomerBalance(cusId),
+        customerService.getCustomerBalance(cusId),
         paymentService.getPendingInvoices(cusId),
       ]);
       setSelectedCustomer(customer);

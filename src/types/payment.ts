@@ -12,11 +12,6 @@ export interface Bank {
   xteam: string;
 }
 
-export interface CustomerBalance {
-  xcus: string;
-  xbalance: string;
-}
-
 export interface PendingInvoice {
   zid: number;
   xchlnum: string;

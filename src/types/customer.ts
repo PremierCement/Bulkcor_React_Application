@@ -26,3 +26,13 @@ export interface CustomerResponse {
   status_code: number;
   data: Customer[];
 }
+
+export interface CustomerBalance {
+  zid: number;
+  xcus: string;
+  xorg: string;
+  xprime: string;
+  xlineamt: string;
+  xpayamt: string;
+  xbalance: string;
+}

@@ -1,7 +1,6 @@
 import api from "@/api/axios";
 import type {
   Bank,
-  CustomerBalance,
   PendingInvoice,
   PaymentSubmission,
 } from "@/types/payment";
@@ -16,11 +15,6 @@ export const paymentService = {
       },
     );
     return response.data.results;
-  },
-
-  getCustomerBalance: async (xcus: string): Promise<CustomerBalance> => {
-    const response = await api.get<CustomerBalance>(`/xbalancev2/${xcus}/`);
-    return response.data;
   },
 
   getPendingInvoices: async (xcus: string): Promise<PendingInvoice[]> => {
