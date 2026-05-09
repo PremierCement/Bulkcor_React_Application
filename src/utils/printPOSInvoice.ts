@@ -110,7 +110,7 @@ export async function printPOSInvoice(
 
   // 5. Table
   const tableBody = details.map((item) => [
-    item.xdesc,
+    item.xname || item.xdesc,
     parseFloat(item.xqty || item.xqtychl || "0").toFixed(0),
     parseFloat(item.xrate).toFixed(2),
     parseFloat(item.xdttax || "0").toFixed(2),
@@ -214,10 +214,8 @@ export async function printPOSInvoice(
   doc.text(`Payment Mode : ${order.xtypeloc || "Cash"}`, 5, y);
   y += 5;
 
-  const salesManName = currentUser
-    ? `${currentUser.first_name} ${currentUser.last_name}`
-    : "Md.Shohel Miah";
-  const salesManCode = currentUser ? currentUser.username : "SysAdmin";
+  const salesManName = currentUser?.xname || currentUser?.first_name || "Md.Shohel Miah";
+  const salesManCode = currentUser?.username || "SysAdmin";
 
   doc.text(`SP Name : ${salesManName} (${salesManCode})`, 5, y);
   y += 4;

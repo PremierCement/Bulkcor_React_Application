@@ -51,7 +51,7 @@ export function PreOrderReportPage() {
         user.username,
         pdate,
       );
-      if (response.status) {
+      if (response.success) {
         setReportData(response.data);
       } else {
         setReportData([]);
@@ -73,9 +73,19 @@ export function PreOrderReportPage() {
     setSelectedInvoice(xchlnum);
     setDetailsLoading(true);
     try {
-      const response = await salesService.getOrderDetails(xchlnum);
-      if (response.status) {
-        setOrderDetails(response.data);
+      const response = await salesService.getPreOrderDetails(xchlnum);
+      if (response.success && response.data && Array.isArray(response.data.lines)) {
+        const enrichedLines = response.data.lines.map((line: any) => ({
+          ...line,
+          xtotamt: response.data.xtotamt,
+          xdtwotax: response.data.xdtwotax,
+          xdttax: response.data.xdttax,
+          xchgtot: response.data.xchgtot,
+          xtype: response.data.xtypeloc,
+          zorg: response.data.xorg,
+          xdate: response.data.xdate,
+        }));
+        setOrderDetails(enrichedLines);
       }
     } catch (error) {
       console.error("Failed to fetch order details", error);
@@ -580,10 +590,7 @@ export function PreOrderReportPage() {
                     <div className="flex justify-between items-start gap-3 relative z-10">
                       <div className="space-y-1">
                         <p className="text-xs font-semibold text-slate-900 dark:text-white leading-tight">
-                          {item.xdesc}
-                        </p>
-                        <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">
-                          Item ID: {item.xitem} • {item.xunitsel}
+                          {item.xname || item.xdesc}
                         </p>
                       </div>
                       <div className="text-right flex-shrink-0">

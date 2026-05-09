@@ -53,7 +53,7 @@ export function SalesReportPage() {
     setLoading(true);
     try {
       const response = await salesService.getSalesReport(user.username, pdate);
-      if (response.status) {
+      if (response.success) {
         setReportData(response.data);
       } else {
         setReportData([]);
@@ -76,8 +76,18 @@ export function SalesReportPage() {
     setDetailsLoading(true);
     try {
       const response = await salesService.getOrderDetails(xchlnum);
-      if (response.status) {
-        setOrderDetails(response.data);
+      if (response.success && response.data && Array.isArray(response.data.lines)) {
+        const enrichedLines = response.data.lines.map((line: any) => ({
+          ...line,
+          xtotamt: response.data.xtotamt,
+          xdtwotax: response.data.xdtwotax,
+          xdttax: response.data.xdttax,
+          xchgtot: response.data.xchgtot,
+          xtype: response.data.xtypeloc,
+          zorg: response.data.xorg,
+          xdate: response.data.xdate,
+        }));
+        setOrderDetails(enrichedLines);
       }
     } catch (error) {
       console.error("Failed to fetch order details", error);
@@ -97,7 +107,7 @@ export function SalesReportPage() {
     setIsPrintingInvoice(item.xchlnum);
     try {
       const detailsResponse = await salesService.getOrderDetails(item.xchlnum);
-      if (detailsResponse.status && Array.isArray(detailsResponse.data)) {
+      if (detailsResponse.success && detailsResponse.data && Array.isArray(detailsResponse.data.lines)) {
         let customerData = null;
         if (item.xcus) {
           try {
@@ -106,7 +116,7 @@ export function SalesReportPage() {
             console.error("Failed to fetch customer for print", e);
           }
         }
-        await printPOSInvoice(item, detailsResponse.data, customerData, user);
+        await printPOSInvoice(item, detailsResponse.data.lines, customerData, user);
       } else {
         addToast("Failed to fetch order details for printing", "error");
       }
@@ -657,10 +667,7 @@ export function SalesReportPage() {
                     <div className="flex justify-between items-start gap-3 relative z-10">
                       <div className="space-y-1">
                         <p className="text-xs font-semibold text-slate-900 dark:text-white leading-tight">
-                          {item.xdesc}
-                        </p>
-                        <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">
-                          Item ID: {item.xitem} • {item.xunitsel}
+                          {item.xname || item.xdesc}
                         </p>
                       </div>
                       <div className="text-right flex-shrink-0">

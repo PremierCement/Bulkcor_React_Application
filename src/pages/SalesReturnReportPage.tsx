@@ -38,7 +38,7 @@ export function SalesReturnReportPage() {
         user.username,
         pdate,
       );
-      if (response.status) {
+      if (response.success) {
         setReportData(response.data);
       } else {
         setReportData([]);

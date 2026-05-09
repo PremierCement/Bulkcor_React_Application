@@ -75,26 +75,37 @@ export function OrderCreatePage() {
   const { addToast } = useToast();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitialData = async () => {
       if (!xcus) return;
       setLoading(true);
       try {
-        const [customerData, productsData, categoriesData] = await Promise.all([
+        const [customerData, categoriesData] = await Promise.all([
           customerService.getCustomerById(xcus),
-          productService.getProducts(),
           productService.getCategories(),
         ]);
         setCustomer(customerData);
-        setProducts(productsData);
         setCategories(categoriesData);
       } catch (error) {
-        console.error("Failed to fetch data", error);
+        console.error("Failed to fetch initial data", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+    fetchInitialData();
   }, [xcus]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!xcus) return;
+      try {
+        const productsData = await productService.getProducts(selectedCategory);
+        setProducts(productsData);
+      } catch (error) {
+        console.error("Failed to fetch products", error);
+      }
+    };
+    fetchProducts();
+  }, [xcus, selectedCategory]);
 
   useEffect(() => {
     if (!showHistory || !xcus) return;
@@ -138,7 +149,7 @@ export function OrderCreatePage() {
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       const matchSearch =
-        p.xdesc.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (p.xname || p.xdesc).toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.xitem.toLowerCase().includes(searchTerm.toLowerCase());
       const matchCategory =
         selectedCategory === "all" || p.xdiv === selectedCategory;
@@ -236,13 +247,13 @@ export function OrderCreatePage() {
   const handleLoadPreOrder = async (xchlnum: string) => {
     setHistoryLoading(true);
     try {
-      const response = await salesService.getSaleDetails(xchlnum);
-      if (response.status && Array.isArray(response.data)) {
+      const response = await salesService.getPreOrderDetails(xchlnum);
+      if (response.success && response.data && Array.isArray(response.data.lines)) {
         const newCart: Record<string, CartItem> = {};
 
         // We need to map the API response to our CartItem structure
         // Note: The API response has most fields, but we align with our Product type where possible
-        response.data.forEach((item: any) => {
+        response.data.lines.forEach((item: any) => {
           // Find the product in our local products list to get full details if needed
           const product = products.find((p) => p.xitem === item.xitem);
 
@@ -315,7 +326,6 @@ export function OrderCreatePage() {
           xline: index + 1,
           xqtychl: item.totalPcs - item.focQty,
           xqty: item.qty,
-          xqtycrn: 0,
           xrate: Number(
             (item.price !== undefined
               ? item.price
@@ -365,8 +375,8 @@ export function OrderCreatePage() {
     try {
       setHistoryLoading(true);
       const response = await salesService.getOrderDetails(order.xchlnum);
-      if (response.status && Array.isArray(response.data)) {
-        await printPOSInvoice(order, response.data, customer, user);
+      if (response.success && response.data && Array.isArray(response.data.lines)) {
+        await printPOSInvoice(order, response.data.lines, customer, user);
       } else {
         addToast("Failed to fetch order details for printing", "error");
       }
@@ -482,7 +492,7 @@ export function OrderCreatePage() {
             </div>
 
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1 line-clamp-2">
-              {product.xdesc}
+              {product.xname || product.xdesc}
             </h3>
 
             <div className="flex items-center gap-2 mb-4">
@@ -583,7 +593,7 @@ export function OrderCreatePage() {
                     {selectedProduct.xitem}
                   </span>
                   <h3 className="text-xl font-semibold text-slate-900 dark:text-white mt-2">
-                    {selectedProduct.xdesc}
+                    {selectedProduct.xname || selectedProduct.xdesc}
                   </h3>
                   <p className="text-xs text-slate-500 font-medium mt-1">
                     {selectedProduct.xunitpur} (
@@ -866,7 +876,7 @@ export function OrderCreatePage() {
                   >
                     <div className="flex-1">
                       <h4 className="text-sm font-semibold text-slate-900 dark:text-white">
-                        {item.product.xdesc}
+                        {item.product.xname || item.product.xdesc}
                       </h4>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-[10px] font-semibold text-slate-400 uppercase">

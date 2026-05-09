@@ -1,5 +1,8 @@
+import type { ApiEnvelope } from "./api";
+
 export interface Product {
   xitem: string;
+  xname: string;
   xdesc: string;
   xlong: string;
   xstdprice: string;
@@ -25,8 +28,4 @@ export interface Category {
   xrate: number | null;
 }
 
-export interface ProductListResponse {
-  status: boolean;
-  status_code: number;
-  data: Product[];
-}
+export type ProductListResponse = ApiEnvelope<Product[]>;

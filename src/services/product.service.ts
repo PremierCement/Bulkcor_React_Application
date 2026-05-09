@@ -1,22 +1,22 @@
 import api from "@/api/axios";
-import type { Product, Category, ProductListResponse } from "@/types/product";
-import type { PaginatedResponse } from "./common.service";
+import type { Product, Category } from "@/types/product";
+import type { ApiEnvelope } from "@/types/api";
 
 export const productService = {
-  getProducts: async (): Promise<Product[]> => {
-    const response = await api.get<ProductListResponse>("/item/list");
+  getProducts: async (xdiv?: string): Promise<Product[]> => {
+    const response = await api.get<ApiEnvelope<Product[]>>("/products/", {
+      params: xdiv && xdiv !== "all" ? { xdiv } : {},
+    });
     return response.data.data;
   },
 
   getCategories: async (): Promise<Category[]> => {
-    const response = await api.get<PaginatedResponse<Category>>(
-      "/dropdown_list1",
-      {
-        params: {
-          xtype: "Item Category",
-        },
+    const response = await api.get<ApiEnvelope<Category[]>>("/helpers/xcodes", {
+      params: {
+        zid: 100000,
+        xtype: "Item Category",
       },
-    );
-    return response.data.results;
+    });
+    return response.data.data;
   },
 };

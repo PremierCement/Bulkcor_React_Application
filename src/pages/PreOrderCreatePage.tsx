@@ -98,7 +98,7 @@ export function PreOrderCreatePage() {
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       const matchSearch =
-        p.xdesc.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (p.xname || p.xdesc).toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.xitem.toLowerCase().includes(searchTerm.toLowerCase());
       const matchCategory =
         selectedCategory === "all" || p.xdiv === selectedCategory;
@@ -231,7 +231,6 @@ export function PreOrderCreatePage() {
           xline: index + 1,
           xqtychl: item.totalPcs - item.focQty,
           xqty: item.qty,
-          xqtycrn: 0,
           xrate: Number(
             (item.price !== undefined
               ? item.price
@@ -370,7 +369,7 @@ export function PreOrderCreatePage() {
             </div>
 
             <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1 line-clamp-2">
-              {product.xdesc}
+              {product.xname || product.xdesc}
             </h3>
 
             <div className="flex items-center gap-2 mb-4">
@@ -471,7 +470,7 @@ export function PreOrderCreatePage() {
                     {selectedProduct.xitem}
                   </span>
                   <h3 className="text-xl font-semibold text-slate-900 dark:text-white mt-2">
-                    {selectedProduct.xdesc}
+                    {selectedProduct.xname || selectedProduct.xdesc}
                   </h3>
                   <p className="text-xs text-slate-500 font-medium mt-1">
                     {selectedProduct.xunitpur} (
@@ -755,7 +754,7 @@ export function PreOrderCreatePage() {
                   >
                     <div className="flex-1">
                       <h4 className="text-sm font-semibold text-slate-900 dark:text-white">
-                        {item.product.xdesc}
+                        {item.product.xname || item.product.xdesc}
                       </h4>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-[10px] font-semibold text-slate-400 uppercase">
