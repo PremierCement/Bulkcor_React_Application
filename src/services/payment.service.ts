@@ -4,36 +4,30 @@ import type {
   PendingInvoice,
   PaymentSubmission,
 } from "@/types/payment";
-import type { PaginatedResponse } from "./common.service";
+import type { ApiEnvelope } from "@/types/api";
 
 export const paymentService = {
   getBanks: async (): Promise<Bank[]> => {
-    const response = await api.get<PaginatedResponse<Bank>>(
-      "/code_and_paramnew",
-      {
-        params: { xtype: "bank" },
-      },
+    const response = await api.get<ApiEnvelope<Bank[]>>(
+      "/helpers/xcodes?zid=100000&xtype=Bank"
     );
-    return response.data.results;
+    return response.data.data;
   },
 
   getPendingInvoices: async (xcus: string): Promise<PendingInvoice[]> => {
-    const response = await api.get<PaginatedResponse<PendingInvoice>>(
-      "/pending-invoice",
-      {
-        params: { xcus },
-      },
+    const response = await api.get<ApiEnvelope<PendingInvoice[]>>(
+      `/payment/pending-invoices/?xcus=${xcus}`
     );
-    return response.data.results;
+    return response.data.data;
   },
 
   createPaymentEntry: async (data: PaymentSubmission): Promise<any> => {
-    const response = await api.post("/payment-entry/", data);
+    const response = await api.post("/payment/entry", data);
     return response.data;
   },
 
   getPaymentDetails: async (xtrnnum: string): Promise<any> => {
-    const response = await api.get(`/paymentNumber?xtrnnum=${xtrnnum}`);
+    const response = await api.get<ApiEnvelope<any[]>>(`/payment/details?xtrnnum=${xtrnnum}`);
     return response.data;
   },
 };

@@ -128,9 +128,14 @@ export default function PaymentCollectionsPage() {
     const fetchPaymentHistory = async () => {
       setLoading((prev) => ({ ...prev, history: true }));
       try {
-        const today = new Date().toISOString().split("T")[0];
-        const response = await salesService.getPaymentList(xcus, today);
-        setHistoryPayments(response.results || []);
+        // use en-CA locale to consistently get YYYY-MM-DD format
+        const today = new Date().toLocaleDateString("en-CA");
+        const response = await salesService.getPaymentList(xcus!, today);
+        if (response.success && Array.isArray(response.data)) {
+          setHistoryPayments(response.data);
+        } else {
+          setHistoryPayments([]);
+        }
       } catch (error) {
         console.error("Failed to fetch payment history", error);
         setHistoryPayments([]);
@@ -146,8 +151,8 @@ export default function PaymentCollectionsPage() {
     try {
       addToast("Fetching payment details...", "info");
       const response = await paymentService.getPaymentDetails(xtrnnum);
-      if (response.results && response.results.length > 0) {
-        await printCollectionInvoice(response.results[0]);
+      if (response.success && response.data && response.data.length > 0) {
+        await printCollectionInvoice(response.data[0]);
         addToast("Receipt generated successfully", "success");
       } else {
         addToast("Payment details not found", "error");

@@ -202,12 +202,7 @@ export interface SalesReturnReportEntry {
 
 export type SalesReturnReportResponse = ApiEnvelope<SalesReturnReportEntry[]>;
 
-export interface PaymentListResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: CollectionReportEntry[];
-}
+export type PaymentListResponse = ApiEnvelope<CollectionReportEntry[]>;
 
 export const salesService = {
   confirmOrder: async (data: SaleOrder) => {
@@ -255,7 +250,7 @@ export const salesService = {
     return response.data;
   },
   getPaymentList: async (cusCode: string, date: string): Promise<PaymentListResponse> => {
-    const response = await api.get(`/paymentlist?xcus=${cusCode}&xdate=${date}`);
+    const response = await api.get<PaymentListResponse>(`/payment/report?xdate=${date}&xcus=${cusCode}`);
     return response.data;
   },
   getPreOrderDetails: async (xchlnum: string): Promise<SaleDetailResponse> => {

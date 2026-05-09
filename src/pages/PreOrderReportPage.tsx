@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import {
   salesService,
-  type SalesReportEntry,
+  type PreOrderItem,
   type SalesOrderDetailEntry,
 } from "@/services/sales.service";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -37,7 +37,7 @@ export function PreOrderReportPage() {
     new Date().toISOString().split("T")[0],
   );
   const [searchTerm, setSearchTerm] = useState("");
-  const [reportData, setReportData] = useState<SalesReportEntry[]>([]);
+  const [reportData, setReportData] = useState<PreOrderItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<string | null>(null);
   const [orderDetails, setOrderDetails] = useState<SalesOrderDetailEntry[]>([]);
